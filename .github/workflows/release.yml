@@ -1,0 +1,155 @@
+name: Release
+
+# Builds the bootable ISO from a tag, verifies it boots, and publishes it to
+# GitHub Releases with checksums.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (for a manual run)'
+        required: true
+        default: 'v0.0.0-test'
+
+permissions:
+  contents: write
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install the toolchain and QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential binutils gcc make qemu-system-x86
+
+      - name: Determine the version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG"
+
+      - name: Check the tag matches the version in the Makefile
+        run: |
+          MAKEFILE_VERSION=$(grep -m1 '^VERSION' Makefile | cut -d= -f2 | tr -d ' ')
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          if [ "$MAKEFILE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::warning::tag $TAG_VERSION does not match Makefile version $MAKEFILE_VERSION"
+          fi
+
+      - name: Run the unit tests
+        run: make test-unit
+
+      - name: Build the release ISO
+        run: |
+          make clean
+          make iso
+
+      - name: Validate the ISO
+        run: python3 scripts/validate-iso.py --iso build/qira-os.iso --verbose
+
+      - name: Verify the release image boots
+        run: |
+          make build/qira-os-test.iso
+          python3 tests/run_boot_tests.py \
+            --iso build/qira-os-test.iso \
+            --emulator qemu \
+            --timeout 90 \
+            --save-frames build/frames \
+            --keep-log build/boot-test.log
+
+      - name: Assemble the release artefacts
+        id: artefacts
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p release
+
+          cp build/qira-os.iso "release/qira-os-${VERSION}-x86_64.iso"
+          cp build/qira-kernel.elf "release/qira-kernel-${VERSION}.elf"
+
+          cd release
+          sha256sum ./*.iso ./*.elf > SHA256SUMS
+          cd ..
+
+          echo "iso_size=$(du -h build/qira-os.iso | cut -f1)" >> "$GITHUB_OUTPUT"
+          ls -la release/
+
+      - name: Write the release notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cat > release/NOTES.md <<NOTES
+          ## Qira OS ${VERSION}
+
+          A bootable x86_64 operating system built from scratch: custom
+          bootloader, kernel, filesystem, desktop environment and two shells.
+
+          ### Download
+
+          | File | Description |
+          | --- | --- |
+          | \`qira-os-${VERSION}-x86_64.iso\` | Bootable ISO image (${{ steps.artefacts.outputs.iso_size }}) |
+          | \`qira-kernel-${VERSION}.elf\` | Kernel with symbols, for debugging |
+          | \`SHA256SUMS\` | Checksums for the files above |
+
+          ### Running it
+
+          \`\`\`sh
+          qemu-system-x86_64 -cdrom qira-os-${VERSION}-x86_64.iso -m 512
+          \`\`\`
+
+          The image also boots on VirtualBox, VMware and real BIOS hardware
+          written to a USB stick or burned to a CD.
+
+          ### Verified in CI
+
+          This image was booted on an emulated x86_64 machine before release.
+          The boot tests check every startup milestone, run the in-kernel
+          self-test suite, and inspect a capture of the composited desktop.
+
+          See the [changelog](https://github.com/Seigh-sword/QiraOS/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
+          for what changed in this release.
+          NOTES
+          cat release/NOTES.md
+
+      - name: Upload the artefacts to the workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: qira-os-release-${{ steps.version.outputs.version }}
+          path: release/
+          retention-days: 90
+
+      - name: Publish the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Qira OS ${{ steps.version.outputs.version }}
+          body_path: release/NOTES.md
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
+          files: |
+            release/qira-os-${{ steps.version.outputs.version }}-x86_64.iso
+            release/qira-kernel-${{ steps.version.outputs.version }}.elf
+            release/SHA256SUMS

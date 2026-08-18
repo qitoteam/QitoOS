@@ -1,0 +1,24 @@
+# Build output
+/build/
+*.o
+*.d
+*.elf
+*.bin
+*.iso
+*.img
+
+# Generated sources (recreated by tools/genfont.py)
+/src/kernel/gfx/font_data.c
+
+# Test and capture artefacts
+*.log
+/docs/screenshots/*.raw
+
+# Editor and OS noise
+*.swp
+*~
+.DS_Store
+.vscode/
+.idea/
+__pycache__/
+*.pyc

@@ -1,0 +1,250 @@
+name: CI
+
+# Build Qira OS, run every test suite, produce the bootable ISO, validate it,
+# and keep the image as a workflow artifact.
+
+on:
+  push:
+    branches: ['**']
+    tags-ignore: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Fast checks that need no emulator: they fail in seconds when something
+  # obvious is wrong, before the slower jobs start.
+  # ---------------------------------------------------------------------
+  static-checks:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check the Python tooling compiles
+        run: |
+          python3 -m py_compile tools/*.py tests/*.py
+          echo "all tools parse cleanly"
+
+      - name: Verify the licence and project metadata
+        run: |
+          test -f LICENSE || { echo "LICENSE is missing"; exit 1; }
+          grep -q "Apache License" LICENSE || { echo "LICENSE is not Apache 2.0"; exit 1; }
+          grep -q "Version 2.0" LICENSE || { echo "wrong licence version"; exit 1; }
+          test -f NOTICE || { echo "NOTICE is missing"; exit 1; }
+          test -f README.md || { echo "README.md is missing"; exit 1; }
+          echo "project metadata is in place"
+
+      - name: Check the source layout
+        run: |
+          for path in src/boot src/kernel src/lib src/user docs tools tests scripts; do
+            test -d "$path" || { echo "missing directory: $path"; exit 1; }
+          done
+          echo "source layout is correct"
+
+      - name: Check the documentation set
+        run: |
+          for doc in CHANGELOG.md CONTRIBUTING.md \
+                     docs/ARCHITECTURE.md docs/BOOT.md docs/SHELLS.md \
+                     docs/DRIVERS.md docs/FONTS.md docs/QAC.md docs/LQX.md; do
+            test -f "$doc" || { echo "missing document: $doc"; exit 1; }
+          done
+          echo "documentation set is complete"
+
+      - name: Check that documentation links resolve
+        run: |
+          # Every relative Markdown link in the README and docs/ must point at
+          # a file that exists. A broken link in the README is the most
+          # visible possible defect, and it is trivial to catch here.
+          status=0
+          for src in README.md CONTRIBUTING.md CHANGELOG.md docs/*.md; do
+            dir=$(dirname "$src")
+            grep -oE '\]\([^)#][^)]*\)' "$src" 2>/dev/null \
+              | sed -E 's/^\]\(//; s/\)$//' \
+              | grep -vE '^(https?|mailto):' \
+              | sed -E 's/#.*$//' \
+              | while read -r link; do
+                  [ -z "$link" ] && continue
+                  target="$dir/$link"
+                  if [ ! -e "$target" ]; then
+                    echo "broken link in $src -> $link"
+                    exit 1
+                  fi
+                done || status=1
+          done
+          test "$status" -eq 0 || exit 1
+          echo "all documentation links resolve"
+
+  # ---------------------------------------------------------------------
+  # Host unit tests for the build tooling and image formats.
+  # ---------------------------------------------------------------------
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run the host unit tests
+        run: make test-unit
+
+  # ---------------------------------------------------------------------
+  # Build the kernel and the bootable ISO.
+  # ---------------------------------------------------------------------
+  build:
+    name: Build ISO
+    runs-on: ubuntu-latest
+    needs: [static-checks]
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install the toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential binutils gcc make
+
+      - name: Report the toolchain
+        run: |
+          gcc --version | head -1
+          ld --version | head -1
+          make check-tools
+          make info
+
+      - name: Build the kernel
+        run: make kernel
+
+      - name: Build the bootable ISO
+        run: make iso
+
+      - name: Validate the ISO
+        run: python3 scripts/validate-iso.py --iso build/qira-os.iso
+
+      - name: Read the version
+        id: version
+        run: echo "version=$(grep -m1 '^VERSION' Makefile | cut -d= -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Summarise the build
+        run: |
+          {
+            echo "### Qira OS build"
+            echo
+            echo '| Artefact | Size |'
+            echo '| --- | ---: |'
+            for f in build/boot.bin build/qira-kernel.bin build/qirafs.img build/qira-os.iso; do
+              printf '| `%s` | %s |\n' "$f" "$(du -h "$f" | cut -f1)"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: qira-os-iso
+          path: |
+            build/qira-os.iso
+            build/qira-kernel.elf
+          retention-days: 30
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------
+  # Boot the real ISO on an emulated x86_64 machine and check what it does.
+  # ---------------------------------------------------------------------
+  boot-tests:
+    name: Boot tests (QEMU)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install the toolchain and QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential binutils gcc make qemu-system-x86
+
+      - name: Report the emulator
+        run: qemu-system-x86_64 --version | head -1
+
+      - name: Build the instrumented test image
+        run: make build/qira-os-test.iso
+
+      - name: Boot Qira OS and verify it
+        run: |
+          python3 tests/run_boot_tests.py \
+            --iso build/qira-os-test.iso \
+            --emulator qemu \
+            --timeout 90 \
+            --save-frames build/frames \
+            --keep-log build/boot-test.log
+
+      - name: Upload the boot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-test-evidence
+          path: |
+            build/boot-test.log
+            build/frames/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------
+  # Confirm the project builds from a clean checkout the way the README says.
+  # ---------------------------------------------------------------------
+  clean-build:
+    name: Clean build
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install the toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential binutils gcc make
+
+      - name: Build exactly as the README documents
+        run: |
+          make clean
+          make
+          test -f build/qira-os.iso
+
+      - name: Confirm the build is reproducible in layout
+        run: |
+          sha256sum build/qira-kernel.bin build/qirafs.img
+          python3 scripts/validate-iso.py --iso build/qira-os.iso --verbose
