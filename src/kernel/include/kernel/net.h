@@ -1,14 +1,14 @@
 /*
- * Qira OS - networking
+ * QitoOS - networking
  *
- * Qira implements a compact IPv4 stack: an Ethernet layer over the emulated
+ * Qito implements a compact IPv4 stack: an Ethernet layer over the emulated
  * NICs it can drive, ARP, IPv4, ICMP echo and UDP. TCP is not implemented.
  * When no supported NIC is present the stack runs with only the loopback
  * interface, which still exercises the protocol code and lets `ping 127.0.0.1`
  * work.
  */
-#ifndef QIRA_NET_H
-#define QIRA_NET_H
+#ifndef QITO_NET_H
+#define QITO_NET_H
 
 #include <kernel/types.h>
 
@@ -127,4 +127,4 @@ void        net_set_dns_server(ipv4_addr_t address);
 void ne2000_init(void);
 void rtl8139_init(void);
 
-#endif /* QIRA_NET_H */
+#endif /* QITO_NET_H */

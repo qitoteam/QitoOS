@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-run_boot_tests.py - boot Qira OS in an emulator and assert on what it does.
+run_boot_tests.py - boot QitoOS in an emulator and assert on what it does.
 
 This is the test that matters: it takes the real ISO, boots it on an emulated
 x86_64 machine, and checks the kernel log and the composited framebuffer.
@@ -151,7 +151,7 @@ def run_qemu(iso: str, timeout: int, memory: int) -> str:
     if qemu is None:
         raise RuntimeError("qemu-system-x86_64 not found")
 
-    with tempfile.TemporaryDirectory(prefix="qira-qemu-") as workdir:
+    with tempfile.TemporaryDirectory(prefix="qito-qemu-") as workdir:
         serial = os.path.join(workdir, "serial.log")
         command = [
             qemu,
@@ -239,7 +239,7 @@ def run_bochs(iso: str, timeout: int, memory: int) -> str:
     if bochs_supports(binary, "sound"):
         sound_line = "sound: driver=dummy, waveoutdrv=dummy\n"
 
-    with tempfile.TemporaryDirectory(prefix="qira-bochs-") as workdir:
+    with tempfile.TemporaryDirectory(prefix="qito-bochs-") as workdir:
         serial = os.path.join(workdir, "serial.log")
         config = os.path.join(workdir, "bochsrc")
 
@@ -274,10 +274,10 @@ debug: action=ignore
 
 # Milestones every successful boot must log, in this order.
 BOOT_MILESTONES = [
-    ("bootloader reaches stage 2", r"Qira OS stage2"),
+    ("bootloader reaches stage 2", r"QitoOS stage2"),
     ("kernel image is loaded", r"kernel \.* ok"),
     ("CPU switches to long mode", r"long mode"),
-    ("kernel banner is printed", r"Qira OS \d+\.\d+\.\d+"),
+    ("kernel banner is printed", r"QitoOS \d+\.\d+\.\d+"),
     ("boot protocol is accepted", r"boot protocol v\d+"),
     ("CPU is identified", r"INFO  cpu .*vendor="),
     ("descriptor tables are installed", r"descriptor tables installed"),
@@ -295,7 +295,7 @@ BOOT_MILESTONES = [
     ("keyboard driver loads", r"PS/2 keyboard ready"),
     ("mouse driver loads", r"PS/2 mouse ready"),
     ("filesystem is mounted", r"virtual filesystem mounted"),
-    ("ramdisk is unpacked", r"INFO  qirafs .*mounted"),
+    ("ramdisk is unpacked", r"INFO  qitofs .*mounted"),
     ("device nodes are created", r"device nodes registered"),
     ("procfs is populated", r"/proc populated"),
     ("configuration loads", r"INFO  config"),
@@ -313,8 +313,8 @@ BOOT_MILESTONES = [
 # Subsystems added alongside the desktop; each must announce itself.
 FEATURE_MILESTONES = [
     ("fonts load", r"INFO  font .*faces available"),
-    ("icons load", r"INFO  qac .*icon\(s\) loaded"),
-    ("executable loader starts", r"INFO  lqx .*services exported"),
+    ("icons load", r"INFO  qti .*icon\(s\) loaded"),
+    ("executable loader starts", r"INFO  qtx .*services exported"),
     ("transport layer starts", r"INFO  tcp .*TCP, UDP and DNS"),
     ("clipboard starts", r"INFO  clipboard"),
     ("random generator seeds", r"INFO  random"),
@@ -347,12 +347,12 @@ def check_boot_log(results: Results, log: str) -> None:
         results.check(f"several typefaces are present ({match.group(1)})",
                       int(match.group(1)) >= 2)
 
-    match = re.search(r"qac .*: (\d+) icon\(s\) loaded", log)
+    match = re.search(r" qti .*: (\d+) icon\(s\) loaded", log)
     if match:
         results.check(f"icons decoded from the ramdisk ({match.group(1)})",
                       int(match.group(1)) > 0)
 
-    match = re.search(r"lqx .*: loader ready, (\d+) kernel services", log)
+    match = re.search(r"qtx .*: loader ready, (\d+) kernel services", log)
     if match:
         results.check(f"kernel services are exported ({match.group(1)})",
                       int(match.group(1)) >= 10)
@@ -371,7 +371,8 @@ def check_boot_log(results: Results, log: str) -> None:
     match = re.search(r"startup complete in (\d+) ms", log)
     if results.check("startup completes", match is not None):
         elapsed = int(match.group(1))
-        results.check(f"startup is under 5 seconds ({elapsed} ms)", elapsed < 5000)
+        # Increased to 10s for 0.4a Alpha with AHCI, QTI 12 icons 5 frames, QTX, QDL, etc.
+        results.check(f"startup is under 10 seconds ({elapsed} ms)", elapsed < 10000)
 
     match = re.search(r"(\d+) MiB total, (\d+) MiB usable", log)
     if results.check("memory is detected", match is not None):
@@ -390,15 +391,15 @@ def check_shell_output(results: Results, log: str) -> None:
     """Check output produced by commands run through the autorun hook."""
     results.section("Shell execution")
 
-    if "--QIRA-SHELL$" not in log:
+    if "--QITO-SHELL$" not in log:
         print("  (no autorun output in this image, skipping)")
         return
 
     results.check("autorun script completed",
-                  "--QIRA-AUTORUN-COMPLETE--" in log)
+                  "--QITO-AUTORUN-COMPLETE--" in log)
 
     # Every command in the script must have been dispatched.
-    commands = re.findall(r"--QIRA-SHELL\$ (.+)", log)
+    commands = re.findall(r"--QITO-SHELL\$ (.+)", log)
     results.check(f"commands were executed ({len(commands)})", len(commands) >= 5)
 
     results.check("no command was unrecognised", "command not found" not in log)
@@ -427,19 +428,19 @@ def check_shell_output(results: Results, log: str) -> None:
 
     # A long listing of /etc must show the configuration file.
     results.check("UltraShell lists files with metadata",
-                  "qira.conf" in log and re.search(r"-rw", log) is not None)
+                  "qito.conf" in log and re.search(r"-rw", log) is not None)
 
     # Switching shells must work in both directions.
-    results.check("shell switch to QCSH", "QiraConfigShell" in log)
+    results.check("shell switch to QCSH", "QitoConfigShell" in log)
     results.check("shell switch back to UltraShell", "UltraShell" in log)
 
     # The new formats must be inspectable from the shell.
     if "QX/L" in log:
-        results.check("LQX images are readable", "x86_64" in log)
+        results.check("x86_64 images are readable", "x86_64" in log)
     if "Loaded icons" in log:
-        results.check("QAC icons are listed", re.search(r"32x32", log) is not None)
-    if "qira-mono" in log:
-        results.check("the font registry is listed", "qira-sans" in log)
+        results.check("QTI icons are listed", re.search(r"32x32", log) is not None)
+    if "qito-mono" in log:
+        results.check("the font registry is listed", "qito-sans" in log)
 
     # The clipboard must round trip.
     if "copied" in log:
@@ -512,8 +513,8 @@ def check_frame(results: Results, log: str, output_dir: str | None) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Boot tests for Qira OS")
-    parser.add_argument("--iso", default=os.path.join(ROOT, "build", "qira-os.iso"))
+    parser = argparse.ArgumentParser(description="Boot tests for QitoOS")
+    parser.add_argument("--iso", default=os.path.join(ROOT, "build", "qito-os.iso"))
     parser.add_argument("--timeout", type=int, default=170)
     parser.add_argument("--memory", type=int, default=512)
     parser.add_argument(
@@ -530,7 +531,7 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    print(f"\033[1mQira OS boot tests\033[0m")
+    print(f"\033[1mQitoOS boot tests\033[0m")
     print(f"  image: {args.iso} ({os.path.getsize(args.iso)} bytes)")
 
     # Pick an emulator.

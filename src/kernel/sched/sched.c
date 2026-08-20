@@ -1,5 +1,5 @@
 /*
- * Qira OS - preemptive round-robin scheduler with priority levels
+ * QitoOS - preemptive round-robin scheduler with priority levels
  *
  * Tasks are kept in per-priority ready queues. On each timer tick the current
  * task's slice is decremented; when it expires the scheduler picks the highest
@@ -220,6 +220,67 @@ int sched_create_kernel_task(const char *name, void (*entry)(void *), void *arg,
 
     KLOG_DEBUG("sched", "created task %d '%s' (%s priority)", task->pid, name,
                sched_priority_name(priority));
+    return task->pid;
+}
+
+int sched_create_user_task(const char *name, uint64_t entry_va, struct address_space *space,
+                           uint64_t stack_top, int argc, uint64_t argv_va,
+                           task_priority_t priority)
+{
+    bool_t irq = spinlock_acquire(&sched_lock);
+    struct task *task = alloc_task();
+    if (!task) {
+        spinlock_release(&sched_lock, irq);
+        KLOG_ERR("sched", "task table full, cannot create user task '%s'", name);
+        return -1;
+    }
+    task->pid = next_pid++;
+    task->ppid = current ? current->pid : 0;
+    task->priority = priority;
+    task->is_kernel = false;
+    task->uid = 1000;
+    task->gid = 1000;
+    task->capabilities = 0;
+    task->created_at_ms = time_uptime_ms();
+    task->time_slice = SLICE_TICKS(priority);
+    strlcpy(task->name, name, sizeof(task->name));
+    strlcpy(task->cwd, "/", sizeof(task->cwd));
+    task->space = space;
+    spinlock_release(&sched_lock, irq);
+
+    task->kernel_stack = kmalloc(KERNEL_STACK_SIZE);
+    if (!task->kernel_stack) {
+        task->state = TASK_UNUSED;
+        KLOG_ERR("sched","no memory for user task '%s' kernel stack",name);
+        if (space) vmm_destroy_space(space);
+        return -1;
+    }
+    *(uint64_t *)task->kernel_stack = STACK_GUARD_MAGIC;
+    uint64_t kstack_top = (uint64_t)task->kernel_stack + KERNEL_STACK_SIZE;
+    kstack_top &= ~0xFull;
+    task->kernel_stack_top = kstack_top;
+
+    kstack_top -= sizeof(struct interrupt_frame);
+    struct interrupt_frame *frame = (struct interrupt_frame *)kstack_top;
+    memset(frame,0,sizeof(*frame));
+
+    frame->rip = entry_va;
+    frame->cs = SEL_USER_CODE | 3; // 0x23
+    frame->rflags = 0x202;
+    frame->rsp = stack_top;
+    frame->ss = SEL_USER_DATA | 3; // 0x1B
+    frame->rdi = (uint64_t)argc;
+    frame->rsi = argv_va;
+    frame->vector = 0;
+
+    task->frame = frame;
+
+    irq = spinlock_acquire(&sched_lock);
+    enqueue(task);
+    spinlock_release(&sched_lock, irq);
+
+    KLOG_INFO("sched","created user task %d '%s' entry=0x%llx stack=0x%llx", task->pid, name,
+              (unsigned long long)entry_va, (unsigned long long)stack_top);
     return task->pid;
 }
 

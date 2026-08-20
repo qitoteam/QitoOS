@@ -1,5 +1,5 @@
 /*
- * Qira OS - kernel entry and system startup
+ * QitoOS - kernel entry and system startup
  *
  * Brings the machine up in ordered stages, each of which depends only on the
  * stages before it:
@@ -42,11 +42,22 @@
 #include <kernel/desktop.h>
 #include <kernel/ipc.h>
 #include <kernel/font.h>
-#include <kernel/qac.h>
-#include <kernel/lqx.h>
+#include <kernel/qti.h>
+#include <kernel/qtx.h>
+#include <kernel/qdl.h>
+#include <kernel/qtpkg.h>
 #include <kernel/splash.h>
 #include <kernel/clipboard.h>
 #include <kernel/random.h>
+#include <kernel/ahci.h>
+#include <kernel/gfx3d.h>
+#include <kernel/persist.h>
+#include <kernel/apic.h>
+#include <kernel/hpet.h>
+#include <kernel/tls.h>
+#include <kernel/unicode.h>
+#include <kernel/mmap.h>
+#include <kernel/sha256.h>
 
 #include "../boot/bootinfo.h"
 
@@ -58,9 +69,9 @@ void procfs_init(void);
  * The boot info block lives in low memory that the page allocator will later
  * hand out, so it is copied somewhere safe before anything else runs.
  */
-static struct qira_boot_info boot_info_copy;
+static struct qito_boot_info boot_info_copy;
 
-const struct qira_boot_info *kernel_boot_info(void)
+const struct qito_boot_info *kernel_boot_info(void)
 {
     return &boot_info_copy;
 }
@@ -79,9 +90,9 @@ static void print_banner(void)
     kputs(" | | | | | '__/ _` | | | \\__ \\\n");
     kputs(" | |_| | | | | (_| | |_| |___/\n");
     kputs("  \\__\\_\\_|_|  \\__,_|\\___/|___/\n");
-    kprintf("\n Qira OS %s \"%s\" - x86_64\n", QIRA_VERSION_STRING, QIRA_CODENAME);
-    kprintf(" Build %s, built %s\n", QIRA_BUILD_ID, QIRA_BUILD_DATE);
-    kprintf(" %s\n\n", QIRA_PROJECT_URL);
+    kprintf("\n QitoOS %s \"%s\" - x86_64\n", QITO_VERSION_STRING, QITO_CODENAME);
+    kprintf(" Build %s, built %s\n", QITO_BUILD_ID, QITO_BUILD_DATE);
+    kprintf(" %s\n\n", QITO_PROJECT_URL);
 }
 
 /*
@@ -112,9 +123,9 @@ static void init_task(void *arg)
     }
 }
 
-void kmain(struct qira_boot_info *boot);
+void kmain(struct qito_boot_info *boot);
 
-void kmain(struct qira_boot_info *boot)
+void kmain(struct qito_boot_info *boot)
 {
     /* --- 1. earliest output ------------------------------------------ */
     serial_init();
@@ -124,9 +135,9 @@ void kmain(struct qira_boot_info *boot)
 
     print_banner();
 
-    if (boot->magic != QIRA_BOOT_MAGIC) {
+    if (boot->magic != QITO_BOOT_MAGIC) {
         panic("bad boot info magic 0x%x (expected 0x%x): loader/kernel mismatch",
-              boot->magic, QIRA_BOOT_MAGIC);
+              boot->magic, QITO_BOOT_MAGIC);
     }
     memcpy(&boot_info_copy, boot, sizeof(boot_info_copy));
     boot = &boot_info_copy;
@@ -176,7 +187,7 @@ void kmain(struct qira_boot_info *boot)
     bool_t graphics = fb_init(boot);
     if (graphics) {
         splash_begin();
-        splash_update("Starting Qira OS", 8);
+        splash_update("Starting QitoOS", 8);
     }
 
     console_init();
@@ -210,7 +221,7 @@ void kmain(struct qira_boot_info *boot)
 
     /* Typefaces and icons: both read settings and the filesystem. */
     font_init();
-    qac_init();
+    qti_init();
 
     if (graphics) {
         splash_update("Loading fonts and icons", 60);
@@ -221,7 +232,17 @@ void kmain(struct qira_boot_info *boot)
     syscall_init();
     ipc_init();
     service_init();
-    lqx_init();
+    qtx_init();
+    /* qdl_init called inside qtx_init */
+    ahci_init();
+    persist_init();
+    gfx3d_init();
+    apic_init();
+    // hpet_init called inside time_init
+    tls_init();
+    glyph_cache_init();
+    mmap_init();
+    page_cache_init();
     net_init();
     pkg_init();
 

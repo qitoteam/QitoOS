@@ -1,5 +1,5 @@
 /*
- * Qira OS - virtual memory manager
+ * QitoOS - virtual memory manager
  *
  * Manages 4-level x86_64 page tables. The kernel half (entries 256-511 of the
  * PML4) is shared by every address space, so a new user process only needs its
@@ -70,7 +70,7 @@ static uint64_t *walk(struct address_space *space, virt_addr_t virt, bool_t crea
     return &table[indices[3]];
 }
 
-void vmm_init(const struct qira_boot_info *boot)
+void vmm_init(const struct qito_boot_info *boot)
 {
     UNUSED(boot);
     spinlock_init(&vmm_lock, "vmm");
@@ -309,7 +309,7 @@ int vmm_alloc_at(struct address_space *space, virt_addr_t virt, size_t size,
 /*
  * Page fault handler hook.
  *
- * Qira does not implement demand paging or swap yet, so this only reports
+ * Qito does not implement demand paging or swap yet, so this only reports
  * whether the fault could be resolved. Returning non-zero makes the fault
  * fatal (or fatal to the faulting task).
  */

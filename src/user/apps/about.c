@@ -1,5 +1,5 @@
 /*
- * Qira OS - About and Help
+ * QitoOS - About and Help
  *
  * Two small informational applications: "About" summarises the running system,
  * and "Help" documents the desktop, the shortcuts and the two shells.
@@ -29,13 +29,13 @@ static void about_draw(struct window *win, int x, int y, int w, int h)
     /* Header band. */
     fb_fill_gradient_v(x, y, w, 92, theme->titlebar_active, theme->window_bg);
 
-    const char *title = "Qira OS";
+    const char *title = "QitoOS";
     fb_draw_string_large(x + w / 2 - fb_text_width_large(title) / 2, y + 18, title,
                          theme->accent);
 
     char version[64];
-    snprintf(version, sizeof(version), "version %s \"%s\"", QIRA_VERSION_STRING,
-             QIRA_CODENAME);
+    snprintf(version, sizeof(version), "version %s \"%s\"", QITO_VERSION_STRING,
+             QITO_CODENAME);
     fb_draw_string(x + w / 2 - fb_text_width(version) / 2, y + 62, version,
                    theme->window_text);
 
@@ -54,8 +54,8 @@ static void about_draw(struct window *win, int x, int y, int w, int h)
         } while (0)
 
     ROW("Architecture", "%s", "x86_64 (64-bit long mode)");
-    ROW("Kernel build", "%s", QIRA_BUILD_ID);
-    ROW("Built", "%s", QIRA_BUILD_DATE);
+    ROW("Kernel build", "%s", QITO_BUILD_ID);
+    ROW("Built", "%s", QITO_BUILD_DATE);
     line++;
 
     ROW("Processor", "%s", cpu->brand);
@@ -75,9 +75,9 @@ static void about_draw(struct window *win, int x, int y, int w, int h)
     ROW("Network", "%d interface(s)", net_interface_count());
     line++;
 
-    ROW("Maintainer", "%s", QIRA_MAINTAINER);
-    ROW("Contact", "%s", QIRA_CONTACT);
-    ROW("Project", "%s", QIRA_PROJECT_URL);
+    ROW("Maintainer", "%s", QITO_MAINTAINER);
+    ROW("Contact", "%s", QITO_CONTACT);
+    ROW("Project", "%s", QITO_PROJECT_URL);
     ROW("Licence", "%s", "Apache License 2.0");
 
     #undef ROW
@@ -94,7 +94,7 @@ static const struct app_ops about_ops = {
 
 void app_about_register(void)
 {
-    desktop_register_app("About Qira OS", "i", &about_ops, 520, 470,
+    desktop_register_app("About QitoOS", "i", &about_ops, 520, 470,
                          RGB(130, 190, 255), 0, true);
 }
 
@@ -109,7 +109,7 @@ struct help_state {
 static const char *page_desktop[] = {
     "DESKTOP",
     "",
-    "The Qira desktop composites a wallpaper, a stack of windows, a panel",
+    "The Qito desktop composites a wallpaper, a stack of windows, a panel",
     "along the top edge, menus and notifications.",
     "",
     "Windows",
@@ -119,7 +119,7 @@ static const char *page_desktop[] = {
     "  Drag a window to the top edge to maximise it.",
     "",
     "Panel",
-    "  The Qira button on the left opens the application menu.",
+    "  The Qito button on the left opens the application menu.",
     "  Each open window has a button; click it to raise or minimise.",
     "  The right side shows free memory, the task count and the clock.",
     "",
@@ -133,7 +133,7 @@ static const char *page_desktop[] = {
 };
 
 static const char *page_qcsh[] = {
-    "QIRACONFIGSHELL (QCSH)",
+    "QITOCONFIGSHELL (QCSH)",
     "",
     "QCSH is the administration and diagnostics shell. Start it from a",
     "terminal by typing 'qcsh', and return with 'ush'.",
@@ -217,12 +217,12 @@ static const char *page_ultrashell[] = {
 static const char *page_filesystem[] = {
     "FILESYSTEM",
     "",
-    "Qira mounts an in-memory root filesystem (QiraFS) populated from the",
+    "Qito mounts an in-memory root filesystem (QitoFS) populated from the",
     "boot ramdisk. Changes live in RAM and are lost on reboot.",
     "",
     "  /bin           system executables",
     "  /dev           device nodes",
-    "  /etc           configuration, including qira.conf",
+    "  /etc           configuration, including qito.conf",
     "  /home/user     the default working directory",
     "  /proc          live kernel state, regenerated on every read",
     "  /tmp           scratch space, world writable",

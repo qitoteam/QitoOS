@@ -1,6 +1,6 @@
 # Fonts
 
-Qira OS ships four bitmap typefaces and lets you choose independently
+QitoOS ships four bitmap typefaces and lets you choose independently
 which one the desktop uses and which one terminals use.
 
 - **Generator:** [`tools/genfont.py`](../tools/genfont.py)
@@ -14,10 +14,10 @@ which one the desktop uses and which one terminals use.
 
 | ID | Weight | Intended use | Notes |
 | --- | --- | --- | --- |
-| `qira-sans` | regular | desktop UI | proportional-looking humanist forms |
-| `qira-sans-bold` | bold | UI emphasis | derived from `qira-sans` |
-| `qira-mono` | regular | terminals | fixed pitch, **slashed zero** |
-| `qira-mono-bold` | bold | terminal emphasis | derived from `qira-mono` |
+| `qito-sans` | regular | desktop UI | proportional-looking humanist forms |
+| `qito-sans-bold` | bold | UI emphasis | derived from `qito-sans` |
+| `qito-mono` | regular | terminals | fixed pitch, **slashed zero** |
+| `qito-mono-bold` | bold | terminal emphasis | derived from `qito-mono` |
 
 All four cover the 96 printable ASCII characters, U+0020 to U+007F, in an
 **8 × 16 pixel cell**.
@@ -34,8 +34,8 @@ visually distinct.
 
 ```
 ush> fonts                                   # list every registered face
-ush> fonts set terminal qira-mono-bold       # change the terminal font
-ush> fonts set ui qira-sans-bold             # change the desktop font
+ush> fonts set terminal qito-mono-bold       # change the terminal font
+ush> fonts set ui qito-sans-bold             # change the desktop font
 ```
 
 Changes take effect on the next redraw — you do not need to restart
@@ -47,11 +47,11 @@ Two keys in the system configuration store the preference across reboots:
 
 | Key | Default | Applies to |
 | --- | --- | --- |
-| `desktop.font` | `qira-sans` | panels, menus, window title bars |
-| `terminal.font` | `qira-mono` | the terminal application and the text console |
+| `desktop.font` | `qito-sans` | panels, menus, window title bars |
+| `terminal.font` | `qito-mono` | the terminal application and the text console |
 
 ```
-qcsh> config set terminal.font qira-mono-bold
+qcsh> config set terminal.font qito-mono-bold
 qcsh> config save
 ```
 
@@ -64,7 +64,7 @@ const struct font *f = font_terminal();
 const uint8_t *glyph = font_glyph(f, 'A');   /* 16 rows, 1 byte each */
 int width = font_text_width(f, "hello", 1);
 
-font_set_ui("qira-sans-bold");
+font_set_ui("qito-sans-bold");
 ```
 
 `font_find()` looks a face up by ID and returns `NULL` if it is unknown;
@@ -141,14 +141,18 @@ regenerates it automatically when `genfont.py` changes.
 
 ---
 
-## Limitations
+## Unicode – new in 0.4.0 Nova
 
-- **ASCII only.** No Unicode, no combining marks, no bidirectional text.
-  `font_glyph()` returns the fallback glyph for anything outside
-  U+0020–U+007F.
-- **One size.** The cell is fixed at 8 × 16. `fb_draw_text()` accepts an
-  integer scale factor for larger text, which produces blocky
-  nearest-neighbour output rather than a properly designed larger face.
-- **No antialiasing or hinting.** These are 1-bit bitmaps.
-- **No kerning.** Advance width is a constant 8 pixels, so `qira-sans` is
-  monospaced in practice despite its proportional-looking letterforms.
+- **UTF-8 decoding:** `src/kernel/gfx/unicode.c` provides `utf8_decode`, `utf8_encode`, `utf8_strlen`, `utf8_is_valid`. Fonts still 8×16 cell, but now decode UTF-8 to codepoints.
+- **Glyph cache:** 512 entries LRU, `glyph_cache_init`, `glyph_cache_get`, `glyph_cache_put`.
+- **Coverage:** ASCII 0x20-0x7F plus Latin-1 0xA0-0xFF, Greek 0x0370-0x03FF, Cyrillic 0x0400-0x04FF, box-drawing 0x2500-0x257F (─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼).
+- **Box drawing:** `box_drawing_glyph()` returns 8×16 bitmap for common box chars.
+- **Limitations still:** One size 8×16, no combining marks, no bidi, no antialiasing/hinting, no kerning (advance 8px, so qito-sans monospaced in practice). But now `font_glyph` can fallback to cache or box-drawing for Unicode beyond ASCII.
+
+## Limitations (updated)
+
+- **One size.** Fixed 8×16 cell, scale factor gives blocky nearest-neighbour.
+- **No antialiasing or hinting.** 1-bit bitmaps.
+- **No kerning.** Advance width constant 8.
+- **Combining marks and bidi not yet:** UTF-8 decoded but combining marks not composed, bidi not implemented.
+- **Coverage:** ASCII + Latin-1/Greek/Cyrillic/box-drawing via cache, not full Unicode yet – but infrastructure ready for Minecraft which needs box-drawing for UI.

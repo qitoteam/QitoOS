@@ -1,8 +1,8 @@
 /*
- * Qira OS - power management
+ * QitoOS - power management
  */
-#ifndef QIRA_POWER_H
-#define QIRA_POWER_H
+#ifndef QITO_POWER_H
+#define QITO_POWER_H
 
 #include <kernel/types.h>
 
@@ -20,4 +20,4 @@ NORETURN void power_shutdown(void);
 /* Halt the CPU until the next interrupt; used by the idle loop. */
 void power_idle(void);
 
-#endif /* QIRA_POWER_H */
+#endif /* QITO_POWER_H */

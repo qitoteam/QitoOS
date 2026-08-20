@@ -1,5 +1,5 @@
 /*
- * Qira OS - Log Viewer
+ * QitoOS - Log Viewer
  *
  * Reads the kernel log ring buffer, colours entries by severity, and supports
  * scrolling, filtering and following new output as it arrives.

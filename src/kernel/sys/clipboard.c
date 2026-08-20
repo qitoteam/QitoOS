@@ -1,5 +1,5 @@
 /*
- * Qira OS - system clipboard
+ * QitoOS - system clipboard
  */
 
 #include <kernel/clipboard.h>

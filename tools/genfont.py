@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-genfont.py - generate the Qira OS bitmap typefaces.
+genfont.py - generate the QitoOS bitmap typefaces.
 
 Fonts are authored here as ASCII art ('#' = ink, '.' = paper) and emitted as C
 arrays. Keeping the artwork in source means glyph changes show up as readable
 diffs instead of an opaque blob of hex.
 
-Qira ships four faces:
+Qito ships four faces:
 
-  qira-sans      the interface face: 8x16 cell, 11-row x-height band, proper
+  qito-sans      the interface face: 8x16 cell, 11-row x-height band, proper
                  ascenders and descenders, humanist letterforms
-  qira-mono      the terminal face: squarer, wider apertures, a slashed zero
+  qito-mono      the terminal face: squarer, wider apertures, a slashed zero
                  and serifed 1/l/I so lookalikes cannot be confused
-  qira-sans-bold derived from qira-sans by smearing each row one pixel right
-  qira-mono-bold the same treatment applied to the terminal face
+  qito-sans-bold derived from qito-sans by smearing each row one pixel right
+  qito-mono-bold the same treatment applied to the terminal face
 
 Derived bolds are generated rather than drawn so the two weights can never
 drift out of sync.
@@ -45,7 +45,7 @@ def blank() -> str:
 
 
 # ---------------------------------------------------------------------------
-# qira-sans - the interface face
+# qito-sans - the interface face
 #
 # Rows 0-1   ascender space
 # Rows 2-11  cap height (uppercase and digits occupy rows 2-11)
@@ -267,9 +267,9 @@ sans("~", _, _, _, _, ".###...#", "##.##.##", "#...###.", _, _, _, _, _, _, _)
 
 
 # ---------------------------------------------------------------------------
-# qira-mono - the terminal face
+# qito-mono - the terminal face
 #
-# Starts from qira-sans and overrides the glyphs where a terminal wants
+# Starts from qito-sans and overrides the glyphs where a terminal wants
 # something different: unambiguous lookalikes and squarer, more even shapes.
 # ---------------------------------------------------------------------------
 
@@ -354,10 +354,10 @@ def build_face(source: dict[str, str], bold: bool) -> list[list[int]]:
 
 
 FACES = [
-    ("qira_sans", "Qira Sans", "interface face, humanist proportions", SANS, False),
-    ("qira_sans_bold", "Qira Sans Bold", "interface face, bold weight", SANS, True),
-    ("qira_mono", "Qira Mono", "terminal face, unambiguous glyphs", MONO, False),
-    ("qira_mono_bold", "Qira Mono Bold", "terminal face, bold weight", MONO, True),
+    ("qito_sans", "Qito Sans", "interface face, humanist proportions", SANS, False),
+    ("qito_sans_bold", "Qito Sans Bold", "interface face, bold weight", SANS, True),
+    ("qito_mono", "Qito Mono", "terminal face, unambiguous glyphs", MONO, False),
+    ("qito_mono_bold", "Qito Mono Bold", "terminal face, bold weight", MONO, True),
 ]
 
 
@@ -391,7 +391,7 @@ def emit(path: str) -> None:
         add("")
 
     # The registry the kernel walks at startup.
-    add("const struct font qira_fonts[] = {")
+    add("const struct font qito_fonts[] = {")
     for symbol, name, description, _source, bold in FACES:
         weight = "FONT_BOLD" if bold else "FONT_REGULAR"
         monospace = "true" if "mono" in symbol else "false"
@@ -410,12 +410,12 @@ def emit(path: str) -> None:
         add("    },")
     add("};")
     add("")
-    add(f"const int qira_font_count = {len(FACES)};")
+    add(f"const int qito_font_count = {len(FACES)};")
     add("")
 
     # The legacy symbol the console still links against.
     add("/* Compatibility alias for code that predates the font registry. */")
-    add(f"const uint8_t (*font8x16)[{CELL_H}] = qira_sans_glyphs;")
+    add(f"const uint8_t (*font8x16)[{CELL_H}] = qito_sans_glyphs;")
     add("")
 
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
@@ -426,7 +426,7 @@ def emit(path: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate the Qira OS fonts")
+    parser = argparse.ArgumentParser(description="Generate the QitoOS fonts")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 

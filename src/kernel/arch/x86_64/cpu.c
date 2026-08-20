@@ -1,5 +1,5 @@
 /*
- * Qira OS - CPU identification
+ * QitoOS - CPU identification
  *
  * Reads CPUID and records what the rest of the kernel needs to know about the
  * processor. The results are surfaced by `qcsh cpuinfo` and the System

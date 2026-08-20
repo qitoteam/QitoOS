@@ -1,8 +1,8 @@
 /*
- * Qira OS - interrupt controller and IRQ dispatch
+ * QitoOS - interrupt controller and IRQ dispatch
  */
-#ifndef QIRA_IRQ_H
-#define QIRA_IRQ_H
+#ifndef QITO_IRQ_H
+#define QITO_IRQ_H
 
 #include <kernel/types.h>
 #include <kernel/cpu.h>
@@ -53,4 +53,4 @@ uint64_t irq_get_count(uint8_t irq);
 const char *irq_get_name(uint8_t irq);
 uint64_t interrupt_total_count(void);
 
-#endif /* QIRA_IRQ_H */
+#endif /* QITO_IRQ_H */

@@ -1,5 +1,5 @@
 /*
- * Qira OS - IPv4 network stack
+ * QitoOS - IPv4 network stack
  *
  * Implements Ethernet framing, ARP, IPv4 and ICMP echo. A loopback interface
  * is always present so the protocol paths can be exercised (and tested) even

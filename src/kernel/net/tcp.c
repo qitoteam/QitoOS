@@ -1,5 +1,5 @@
 /*
- * Qira OS - TCP, UDP and DNS
+ * QitoOS - TCP, UDP and DNS
  *
  * Enough of the transport layer to fetch things over the network: a TCP state
  * machine that can open a connection, stream data and close cleanly, UDP

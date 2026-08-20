@@ -1,12 +1,12 @@
 /*
- * Qira OS - system information structure shared with userspace
+ * QitoOS - system information structure shared with userspace
  */
-#ifndef QIRA_SYSINFO_H
-#define QIRA_SYSINFO_H
+#ifndef QITO_SYSINFO_H
+#define QITO_SYSINFO_H
 
 #include <kernel/types.h>
 
-struct qira_sysinfo {
+struct qito_sysinfo {
     char     version[16];
     char     codename[24];
     char     arch[16];
@@ -22,4 +22,4 @@ struct qira_sysinfo {
     uint32_t reserved;
 };
 
-#endif /* QIRA_SYSINFO_H */
+#endif /* QITO_SYSINFO_H */

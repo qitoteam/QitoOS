@@ -1,8 +1,8 @@
 /*
- * Qira OS - freestanding string and memory routines
+ * QitoOS - freestanding string and memory routines
  */
-#ifndef QIRA_STRING_H
-#define QIRA_STRING_H
+#ifndef QITO_STRING_H
+#define QITO_STRING_H
 
 #include <kernel/types.h>
 
@@ -44,4 +44,4 @@ long      strtol(const char *s, char **end, int base);
 unsigned long strtoul(const char *s, char **end, int base);
 int       atoi(const char *s);
 
-#endif /* QIRA_STRING_H */
+#endif /* QITO_STRING_H */

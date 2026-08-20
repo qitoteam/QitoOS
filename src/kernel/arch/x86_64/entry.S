@@ -1,11 +1,11 @@
 /*
- * Qira OS - 64-bit kernel entry point
+ * QitoOS - 64-bit kernel entry point
  *
  * The bootloader enters here in long mode with:
  *   - paging enabled, low 4 GiB identity mapped and aliased at -2 GiB
  *   - a flat GDT loaded (CS = 0x08, data = 0x10)
  *   - interrupts disabled
- *   - RDI = physical address of struct qira_boot_info
+ *   - RDI = physical address of struct qito_boot_info
  *
  * This stub installs the kernel stack, clears BSS, and calls kmain().
  */
@@ -38,7 +38,7 @@ _kernel_entry:
     /* Enable SSE so the compiler may use xmm registers for memory ops. */
     call    enable_sse
 
-    /* kmain(struct qira_boot_info *) */
+    /* kmain(struct qito_boot_info *) */
     movq    %r15, %rdi
     call    kmain
 

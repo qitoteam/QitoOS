@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-mkqirafs.py - build a QiraFS ramdisk image from a directory tree.
+mkqitofs.py - build a QitoFS ramdisk image from a directory tree.
 
-QiraFS is Qira OS's simple read-mostly archive format. The kernel mounts the
+QitoFS is QitoOS's simple read-mostly archive format. The kernel mounts the
 image at boot and copies it into the in-memory VFS, so the format only needs to
 describe a flat list of paths with their contents and metadata.
 
 Layout:
 
-    struct qirafs_header {
-        char     magic[8];      // "QIRAFS01"
+    struct qitofs_header {
+        char     magic[8];      // "QITOFS01"
         uint32_t version;
         uint32_t entry_count;
         uint64_t total_size;
@@ -19,7 +19,7 @@ Layout:
         char     label[32];
     };                          // 72 bytes
 
-    struct qirafs_entry {
+    struct qitofs_entry {
         char     path[192];     // absolute, NUL terminated
         uint32_t type;          // 1 file, 2 directory
         uint32_t permissions;
@@ -39,7 +39,7 @@ import struct
 import sys
 import time
 
-MAGIC = b"QIRAFS01"
+MAGIC = b"QITOFS01"
 VERSION = 1
 HEADER_FMT = "<8sIIQQII32s"
 HEADER_SIZE = struct.calcsize(HEADER_FMT)
@@ -113,7 +113,7 @@ def build(entries: list[dict], label: str) -> bytes:
 
         path = entry["path"].encode("utf-8")
         if len(path) >= 192:
-            raise SystemExit(f"path too long for QiraFS: {entry['path']}")
+            raise SystemExit(f"path too long for QitoFS: {entry['path']}")
 
         table += struct.pack(
             ENTRY_FMT,
@@ -154,7 +154,7 @@ def build(entries: list[dict], label: str) -> bytes:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build a QiraFS ramdisk image")
+    parser = argparse.ArgumentParser(description="Build a QitoFS ramdisk image")
     parser.add_argument("--root", required=True, help="directory to pack")
     parser.add_argument("--output", required=True)
     parser.add_argument("--version", default="dev")
@@ -168,7 +168,7 @@ def main() -> int:
     else:
         entries = collect(args.root)
 
-    image = build(entries, f"qiraos-{args.version}")
+    image = build(entries, f"qitoos-{args.version}")
 
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     with open(args.output, "wb") as handle:
@@ -177,7 +177,7 @@ def main() -> int:
     files = sum(1 for e in entries if e["type"] == TYPE_FILE)
     dirs = sum(1 for e in entries if e["type"] == TYPE_DIR)
     print(
-        "QiraFS image: %s (%d bytes, %d files, %d directories)"
+        "QitoFS image: %s (%d bytes, %d files, %d directories)"
         % (args.output, len(image), files, dirs)
     )
     return 0

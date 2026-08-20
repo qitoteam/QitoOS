@@ -1,5 +1,5 @@
 /*
- * Qira OS - QiraConfigShell (QCSH)
+ * QitoOS - QitoConfigShell (QCSH)
  *
  * The administration and diagnostics shell. Where UltraShell is for everyday
  * work with files and text, QCSH is the place you go to inspect the machine,
@@ -76,22 +76,22 @@ static int cmd_sysinfo(struct shell *sh, int argc, char **argv)
     uint64_t seconds           = ms / 1000;
 
     shell_color(sh, "\033[1;96m");
-    shell_printf(sh, "\n  Qira OS %s \"%s\"\n", QIRA_VERSION_STRING, QIRA_CODENAME);
+    shell_printf(sh, "\n  QitoOS %s \"%s\"\n", QITO_VERSION_STRING, QITO_CODENAME);
     shell_reset_color(sh);
     shell_printf(sh, "  %s\n\n", "----------------------------------------");
 
     section(sh, "System");
     shell_printf(sh, "  %-22s %s\n", "Architecture", "x86_64");
-    shell_printf(sh, "  %-22s %s\n", "Kernel build", QIRA_BUILD_ID);
-    shell_printf(sh, "  %-22s %s\n", "Built", QIRA_BUILD_DATE);
-    shell_printf(sh, "  %-22s %s\n", "Hostname", config_get_string("hostname", "qira"));
+    shell_printf(sh, "  %-22s %s\n", "Kernel build", QITO_BUILD_ID);
+    shell_printf(sh, "  %-22s %s\n", "Built", QITO_BUILD_DATE);
+    shell_printf(sh, "  %-22s %s\n", "Hostname", config_get_string("hostname", "qito"));
     shell_printf(sh, "  %-22s %llud %02lluh %02llum %02llus\n", "Uptime",
                  (unsigned long long)(seconds / 86400),
                  (unsigned long long)((seconds % 86400) / 3600),
                  (unsigned long long)((seconds % 3600) / 60),
                  (unsigned long long)(seconds % 60));
 
-    struct qira_time now;
+    struct qito_time now;
     time_from_unix(rtc_unix_time(), &now);
     char stamp[32];
     time_format(&now, stamp, sizeof(stamp));
@@ -364,7 +364,7 @@ static int cmd_diag(struct shell *sh, int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    section(sh, "Qira OS diagnostics");
+    section(sh, "QitoOS diagnostics");
     shell_printf(sh, "\n");
 
     struct {
@@ -498,7 +498,7 @@ static int cmd_selftest(struct shell *sh, int argc, char **argv)
           vmm_resolve(vmm_kernel_space(), (virt_addr_t)&qcsh) != 0);
 
     /* Filesystem round trip. */
-    const char *probe = "qira selftest payload";
+    const char *probe = "qito selftest payload";
     int error = fs_write_file("/tmp/.selftest", probe, strlen(probe));
     CHECK("fs: write a file", error == 0);
 
@@ -512,7 +512,7 @@ static int cmd_selftest(struct shell *sh, int argc, char **argv)
 
     /* String library. */
     CHECK("string: strcmp", strcmp("abc", "abc") == 0 && strcmp("a", "b") < 0);
-    CHECK("string: strlen", strlen("qira") == 4);
+    CHECK("string: strlen", strlen("qito") == 4);
     char buf[16];
     strlcpy(buf, "truncate me please", sizeof(buf));
     CHECK("string: strlcpy truncates safely", strlen(buf) == 15);
@@ -525,14 +525,14 @@ static int cmd_selftest(struct shell *sh, int argc, char **argv)
 
     /* Timekeeping. */
     CHECK("time: uptime advances", time_uptime_ms() > 0);
-    struct qira_time t;
+    struct qito_time t;
     time_from_unix(0, &t);
     CHECK("time: epoch converts to 1970-01-01",
           t.year == 1970 && t.month == 1 && t.day == 1);
     /* Convert a known timestamp out and back again. */
-    struct qira_time round = {2026, 8, 18, 12, 30, 45, 0};
+    struct qito_time round = {2026, 8, 18, 12, 30, 45, 0};
     uint64_t         stamp = time_to_unix(&round);
-    struct qira_time back;
+    struct qito_time back;
     time_from_unix(stamp, &back);
     CHECK("time: unix round trip",
           back.year == round.year && back.month == round.month &&
@@ -764,7 +764,7 @@ static int cmd_top(struct shell *sh, int argc, char **argv)
     }
 
     uint64_t seconds = time_uptime_ms() / 1000;
-    shell_printf(sh, "Qira OS - up %llu:%02llu:%02llu, %d tasks, %llu MiB free\n\n",
+    shell_printf(sh, "QitoOS - up %llu:%02llu:%02llu, %d tasks, %llu MiB free\n\n",
                  (unsigned long long)(seconds / 3600),
                  (unsigned long long)((seconds % 3600) / 60),
                  (unsigned long long)(seconds % 60), count,
@@ -852,7 +852,7 @@ static int cmd_config(struct shell *sh, int argc, char **argv)
 static int cmd_hostname(struct shell *sh, int argc, char **argv)
 {
     if (argc < 2) {
-        shell_printf(sh, "%s\n", config_get_string("hostname", "qira"));
+        shell_printf(sh, "%s\n", config_get_string("hostname", "qito"));
         return 0;
     }
     config_set_string("hostname", argv[1]);
@@ -908,7 +908,7 @@ static int cmd_df(struct shell *sh, int argc, char **argv)
 
     shell_printf(sh, "%-16s %10s %10s %10s  %s\n", "FILESYSTEM", "NODES", "FILES",
                  "DATA", "MOUNT");
-    shell_printf(sh, "%-16s %10llu %10llu %9lluK  %s\n", "qirafs",
+    shell_printf(sh, "%-16s %10llu %10llu %9lluK  %s\n", "qitofs",
                  (unsigned long long)stats.nodes,
                  (unsigned long long)stats.files,
                  (unsigned long long)(stats.total_bytes / 1024), "/");
@@ -930,7 +930,7 @@ static int cmd_mount(struct shell *sh, int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    shell_printf(sh, "qirafs on / type qirafs (rw,ramdisk)\n");
+    shell_printf(sh, "qitofs on / type qitofs (rw,ramdisk)\n");
     shell_printf(sh, "devfs on /dev type devfs (rw)\n");
     shell_printf(sh, "procfs on /proc type procfs (ro,generated)\n");
     return 0;
@@ -941,7 +941,7 @@ static int cmd_fsck(struct shell *sh, int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    shell_printf(sh, "Checking the Qira root filesystem...\n\n");
+    shell_printf(sh, "Checking the Qito root filesystem...\n\n");
 
     struct fs_statistics stats;
     fs_get_statistics(&stats);
@@ -1062,7 +1062,7 @@ static int cmd_reboot(struct shell *sh, int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    shell_printf(sh, "Rebooting Qira OS...\n");
+    shell_printf(sh, "Rebooting QitoOS...\n");
     config_save();
     power_reboot();
     return 0;
@@ -1073,7 +1073,7 @@ static int cmd_poweroff(struct shell *sh, int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    shell_printf(sh, "Shutting down Qira OS...\n");
+    shell_printf(sh, "Shutting down QitoOS...\n");
     config_save();
     power_shutdown();
     return 0;
@@ -1087,14 +1087,14 @@ static int cmd_version(struct shell *sh, int argc, char **argv)
     UNUSED(argv);
 
     shell_color(sh, "\033[96m");
-    shell_printf(sh, "QiraConfigShell (QCSH)");
+    shell_printf(sh, "QitoConfigShell (QCSH)");
     shell_reset_color(sh);
-    shell_printf(sh, " - Qira OS configuration and diagnostics shell\n");
-    shell_printf(sh, "%s %s \"%s\"\n", QIRA_PROJECT_NAME, QIRA_VERSION_STRING,
-                 QIRA_CODENAME);
-    shell_printf(sh, "Build %s, built %s\n", QIRA_BUILD_ID, QIRA_BUILD_DATE);
-    shell_printf(sh, "Maintainer: %s <%s>\n", QIRA_MAINTAINER, QIRA_CONTACT);
-    shell_printf(sh, "%s\n", QIRA_PROJECT_URL);
+    shell_printf(sh, " - QitoOS configuration and diagnostics shell\n");
+    shell_printf(sh, "%s %s \"%s\"\n", QITO_PROJECT_NAME, QITO_VERSION_STRING,
+                 QITO_CODENAME);
+    shell_printf(sh, "Build %s, built %s\n", QITO_BUILD_ID, QITO_BUILD_DATE);
+    shell_printf(sh, "Maintainer: %s <%s>\n", QITO_MAINTAINER, QITO_CONTACT);
+    shell_printf(sh, "%s\n", QITO_PROJECT_URL);
     return 0;
 }
 
@@ -1200,7 +1200,7 @@ static const struct shell_command commands[] = {
     /* packages */
     {"pkg", "package management",
      "pkg <list|info|install|remove|search|update> [name]",
-     "Manages the software components bundled with Qira OS.",
+     "Manages the software components bundled with QitoOS.",
      cmd_pkg, 0},
 
     /* storage */

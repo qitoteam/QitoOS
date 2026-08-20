@@ -1,5 +1,5 @@
 /*
- * Qira OS - Text Editor
+ * QitoOS - Text Editor
  *
  * A line-oriented editor with cursor movement, insertion, deletion and saving
  * back to the filesystem. Enough to edit configuration files and notes without
@@ -119,7 +119,7 @@ static int editor_save(struct editor_state *state)
         editor_set_status(state, "saved %d lines to %s", state->line_count,
                           state->path);
     } else {
-        editor_set_status(state, "save failed: %s", qira_strerror(error));
+        editor_set_status(state, "save failed: %s", qito_strerror(error));
     }
     return error;
 }

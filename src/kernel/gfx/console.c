@@ -1,5 +1,5 @@
 /*
- * Qira OS - system console
+ * QitoOS - system console
  *
  * Maintains a character cell grid with per-cell colours, renders it onto the
  * framebuffer, and provides a keyboard input ring for the shells.

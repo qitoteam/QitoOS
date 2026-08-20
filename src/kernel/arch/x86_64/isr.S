@@ -1,5 +1,5 @@
 /*
- * Qira OS - interrupt service routine stubs
+ * QitoOS - interrupt service routine stubs
  *
  * Each of the 256 vectors gets a small stub that normalises the stack into a
  * `struct interrupt_frame` and calls the common C dispatcher. Vectors that the

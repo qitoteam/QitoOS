@@ -1,5 +1,5 @@
 /*
- * Qira OS - PS/2 keyboard driver
+ * QitoOS - PS/2 keyboard driver
  *
  * Decodes scancode set 1 (the set the 8042 controller produces by default in
  * translation mode), tracks modifier state, and posts both raw input events

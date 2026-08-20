@@ -1,5 +1,5 @@
 /*
- * Qira OS - kernel heap
+ * QitoOS - kernel heap
  *
  * A first-fit free-list allocator over a contiguous virtual region backed by
  * physical frames. Blocks carry a small header with a magic value so that

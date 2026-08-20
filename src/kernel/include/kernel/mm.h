@@ -1,8 +1,8 @@
 /*
- * Qira OS - memory management
+ * QitoOS - memory management
  */
-#ifndef QIRA_MM_H
-#define QIRA_MM_H
+#ifndef QITO_MM_H
+#define QITO_MM_H
 
 #include <kernel/types.h>
 #include "../../../boot/bootinfo.h"
@@ -33,7 +33,7 @@
 #define PTE_ADDR_MASK 0x000FFFFFFFFFF000ull
 
 /* --- physical memory allocator ------------------------------------- */
-void        pmm_init(const struct qira_boot_info *boot);
+void        pmm_init(const struct qito_boot_info *boot);
 phys_addr_t pmm_alloc_page(void);
 phys_addr_t pmm_alloc_pages(size_t count);
 void        pmm_free_page(phys_addr_t addr);
@@ -64,7 +64,7 @@ struct address_space {
     uint64_t    mapped_pages;
 };
 
-void vmm_init(const struct qira_boot_info *boot);
+void vmm_init(const struct qito_boot_info *boot);
 struct address_space *vmm_kernel_space(void);
 struct address_space *vmm_create_space(void);
 void  vmm_destroy_space(struct address_space *space);
@@ -104,4 +104,4 @@ struct heap_stats {
 void heap_get_stats(struct heap_stats *out);
 bool_t heap_validate(void);
 
-#endif /* QIRA_MM_H */
+#endif /* QITO_MM_H */

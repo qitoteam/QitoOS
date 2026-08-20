@@ -1,12 +1,12 @@
 /*
- * Qira OS - kernel logging and diagnostics
+ * QitoOS - kernel logging and diagnostics
  *
  * Log records are written to a fixed-size in-memory ring buffer and mirrored
  * to any registered sinks (serial port, framebuffer console). The ring buffer
  * is what `qcsh dmesg` and the Logs application read back.
  */
-#ifndef QIRA_LOG_H
-#define QIRA_LOG_H
+#ifndef QITO_LOG_H
+#define QITO_LOG_H
 
 #include <kernel/types.h>
 
@@ -70,4 +70,4 @@ NORETURN void panic(const char *fmt, ...) PRINTF_FMT(1, 2);
         }                                                                   \
     } while (0)
 
-#endif /* QIRA_LOG_H */
+#endif /* QITO_LOG_H */

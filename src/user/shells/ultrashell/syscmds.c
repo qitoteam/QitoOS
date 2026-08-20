@@ -1,5 +1,5 @@
 /*
- * Qira OS - clipboard, environment and utility commands for UltraShell
+ * QitoOS - clipboard, environment and utility commands for UltraShell
  *
  * The rest of the additions that came with the extended feature set: the
  * clipboard, random data, checksums, hex dumps, timing, watching a command,
@@ -23,7 +23,7 @@ static int cmd_copy(struct shell *sh, int argc, char **argv)
 {
     /* With no argument, copy whatever came down the pipe. */
     if (argc < 2) {
-        const char *piped = shell_get_var(sh, "QIRA_PIPE_INPUT");
+        const char *piped = shell_get_var(sh, "QITO_PIPE_INPUT");
         if (!piped || !piped[0]) {
             shell_error(sh, "usage: copy <text>   or   <command> | copy");
             return 1;
@@ -312,7 +312,7 @@ static int cmd_watch(struct shell *sh, int argc, char **argv)
     }
 
     for (int iteration = 0; iteration < times; iteration++) {
-        struct qira_time now;
+        struct qito_time now;
         time_from_unix(rtc_unix_time(), &now);
 
         shell_color(sh, "\033[96m");

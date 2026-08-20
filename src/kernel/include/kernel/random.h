@@ -1,12 +1,12 @@
 /*
- * Qira OS - pseudo-random numbers and assorted small facilities
+ * QitoOS - pseudo-random numbers and assorted small facilities
  *
  * The generator is xoshiro256**, seeded from the timestamp counter and the
  * real-time clock. It is fast and statistically sound, but it is *not*
  * cryptographically secure and must not be used for keys or nonces.
  */
-#ifndef QIRA_RANDOM_H
-#define QIRA_RANDOM_H
+#ifndef QITO_RANDOM_H
+#define QITO_RANDOM_H
 
 #include <kernel/types.h>
 
@@ -36,4 +36,4 @@ struct kernel_symbol {
 const char *ksym_lookup(uint64_t address, uint64_t *offset);
 int         ksym_count(void);
 
-#endif /* QIRA_RANDOM_H */
+#endif /* QITO_RANDOM_H */

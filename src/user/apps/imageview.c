@@ -1,7 +1,7 @@
 /*
- * Qira OS - Icon Viewer
+ * QitoOS - Icon Viewer
  *
- * Browses the QAC icons the system has loaded and inspects .qac files on
+ * Browses the QAC icons the system has loaded and inspects .qti files on
  * disk. Besides being useful, it is the practical test that the icon decoder
  * handles all three encodings correctly: anything it gets wrong is visible
  * immediately.
@@ -23,9 +23,9 @@ struct imageview_state {
     int    zoom;              /* rendered size in pixels */
     bool_t show_grid;
 
-    struct qac_image  loaded;
+    struct qti_image  loaded;
     bool_t            has_loaded;
-    struct qac_header header;
+    struct qti_header header;
     bool_t            has_header;
     char              status[160];
 };
@@ -47,7 +47,7 @@ static void scan_icons(struct imageview_state *state)
             break;
         }
         size_t len = strlen(entry.name);
-        if (len > 4 && strcmp(entry.name + len - 4, ".qac") == 0) {
+        if (len > 4 && strcmp(entry.name + len - 4, ".qti") == 0) {
             strlcpy(state->files[state->file_count++], entry.name,
                     sizeof(state->files[0]));
         }
@@ -60,7 +60,7 @@ static void scan_icons(struct imageview_state *state)
 static void load_selected(struct imageview_state *state)
 {
     if (state->has_loaded) {
-        qac_free(&state->loaded);
+        qti_free(&state->loaded);
         state->has_loaded = false;
     }
     state->has_header = false;
@@ -77,12 +77,12 @@ static void load_selected(struct imageview_state *state)
     char   buffer[1024];
     size_t got = 0;
     if (fs_read_file(path, buffer, sizeof(buffer), &got) == 0) {
-        if (qac_probe(buffer, got, &state->header) == 0) {
+        if (qti_probe(buffer, got, &state->header) == 0) {
             state->has_header = true;
         }
     }
 
-    if (qac_load(path, 32, &state->loaded) == 0) {
+    if (qti_load(path, 32, &state->loaded) == 0) {
         state->has_loaded = true;
         snprintf(state->status, sizeof(state->status), "%s   %dx%d",
                  state->files[state->selected], state->loaded.width,
@@ -108,7 +108,7 @@ static void imageview_on_close(struct window *win)
 {
     struct imageview_state *state = (struct imageview_state *)win->app_state;
     if (state->has_loaded) {
-        qac_free(&state->loaded);
+        qti_free(&state->loaded);
     }
 }
 
@@ -134,17 +134,17 @@ static void imageview_draw(struct window *win, int x, int y, int w, int h)
         }
 
         /* A small preview beside each name. */
-        const struct qac_image *thumbnail = NULL;
+        const struct qti_image *thumbnail = NULL;
         char name[64];
         strlcpy(name, state->files[i], sizeof(name));
         size_t len = strlen(name);
         if (len > 4) {
             name[len - 4] = '\0';
         }
-        thumbnail = qac_get(name);
+        thumbnail = qti_get(name);
 
         if (thumbnail) {
-            qac_draw_scaled(thumbnail, x + 6, ry - 1, 14);
+            qti_draw_scaled(thumbnail, x + 6, ry - 1, 14);
         }
 
         fb_draw_string_clipped(x + 26, ry, name,
@@ -176,7 +176,7 @@ static void imageview_draw(struct window *win, int x, int y, int w, int h)
             }
         }
 
-        qac_draw_scaled(&state->loaded, ix, iy, size);
+        qti_draw_scaled(&state->loaded, ix, iy, size);
         fb_draw_rect(ix - 1, iy - 1, size + 2, size + 2, theme->border);
 
         /* A pixel grid, useful when inspecting the artwork closely. */
@@ -197,7 +197,7 @@ static void imageview_draw(struct window *win, int x, int y, int w, int h)
         if (state->has_header) {
             char line[128];
 
-            snprintf(line, sizeof(line), "Format      QACI version %u",
+            snprintf(line, sizeof(line), "Format      QTI1 version %u",
                      state->header.version);
             fb_draw_string(panel_x + 20, info_y, line,
                            theme->titlebar_text_inactive);

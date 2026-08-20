@@ -1,5 +1,5 @@
 /*
- * Qira OS - Terminal application
+ * QitoOS - Terminal application
  *
  * A windowed terminal that hosts QCSH and UltraShell. Each terminal window
  * owns a scrollback buffer and its own shell state, so several terminals can
@@ -262,7 +262,7 @@ static void term_prompt(struct terminal_state *term)
     }
 
     term->current_color = ansi_palette[10];
-    term_printf(term, "%s@qira", shell_get_var(sh, "USER"));
+    term_printf(term, "%s@qito", shell_get_var(sh, "USER"));
     term->current_color = DEFAULT_FG;
     term_printf(term, ":");
     term->current_color = ansi_palette[12];
@@ -274,10 +274,10 @@ static void term_prompt(struct terminal_state *term)
 static void term_banner(struct terminal_state *term)
 {
     term->current_color = ansi_palette[14];
-    term_printf(term, "Qira OS %s \"%s\"\n", QIRA_VERSION_STRING, QIRA_CODENAME);
+    term_printf(term, "QitoOS %s \"%s\"\n", QITO_VERSION_STRING, QITO_CODENAME);
     term->current_color = DEFAULT_FG;
     term_printf(term, "%s ready. Type 'help' for commands.\n",
-                term->is_qcsh ? "QiraConfigShell (QCSH)" : "UltraShell");
+                term->is_qcsh ? "QitoConfigShell (QCSH)" : "UltraShell");
     term_printf(term, "Switch shells with '%s'.\n\n",
                 term->is_qcsh ? "ush" : "qcsh");
 }
@@ -353,7 +353,7 @@ static void terminal_on_open(struct window *win)
      * and their output land in the scrollback exactly as if typed.
      */
     if (!autorun_done) {
-        extern const struct qira_boot_info *kernel_boot_info(void);
+        extern const struct qito_boot_info *kernel_boot_info(void);
         const char *cmdline = kernel_boot_info()->cmdline;
 
         /* `echo=serial` mirrors shell output to COM1 for the test harness. */
@@ -388,7 +388,7 @@ static void terminal_on_open(struct window *win)
             for (char *command = strtok_r(script, ";", &save); command;
                  command       = strtok_r(NULL, ";", &save)) {
                 if (echo_to_serial) {
-                    serial_write("\n--QIRA-SHELL$ ");
+                    serial_write("\n--QITO-SHELL$ ");
                     serial_write(command);
                     serial_write("\n");
                 }
@@ -397,7 +397,7 @@ static void terminal_on_open(struct window *win)
                 term_prompt(term);
             }
             if (echo_to_serial) {
-                serial_write("\n--QIRA-AUTORUN-COMPLETE--\n");
+                serial_write("\n--QITO-AUTORUN-COMPLETE--\n");
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Qira OS - printf family
+ * QitoOS - printf family
  *
  * A compact but reasonably complete formatter supporting the conversions the
  * kernel and the shells actually use:

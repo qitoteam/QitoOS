@@ -1,5 +1,5 @@
 /*
- * Qira OS - power management
+ * QitoOS - power management
  *
  * Reboot and shutdown paths. Full ACPI is not implemented; instead the
  * well-known emulator shutdown ports are tried in turn, falling back to

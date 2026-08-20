@@ -1,8 +1,8 @@
 /*
- * Qira OS - PCI bus enumeration
+ * QitoOS - PCI bus enumeration
  */
-#ifndef QIRA_PCI_H
-#define QIRA_PCI_H
+#ifndef QITO_PCI_H
+#define QITO_PCI_H
 
 #include <kernel/types.h>
 
@@ -42,4 +42,4 @@ const char *pci_vendor_name(uint16_t vendor_id);
 
 void pci_print_devices(struct shell *sh);
 
-#endif /* QIRA_PCI_H */
+#endif /* QITO_PCI_H */

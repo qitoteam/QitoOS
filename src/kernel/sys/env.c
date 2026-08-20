@@ -1,5 +1,5 @@
 /*
- * Qira OS - additional system facilities
+ * QitoOS - additional system facilities
  *
  * A group of small subsystems that are each too slight for a file of their
  * own but that a real system is expected to have:
@@ -138,7 +138,7 @@ uint64_t random_generated_count(void)
 /*
  * A one-minute load figure, sampled from the run queue. It is an exponential
  * moving average in fixed point, the same shape as the familiar Unix figure,
- * although Qira samples it far less often.
+ * although Qito samples it far less often.
  */
 #define LOAD_SHIFT 11
 #define LOAD_ONE   (1 << LOAD_SHIFT)

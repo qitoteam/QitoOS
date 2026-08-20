@@ -1,14 +1,14 @@
 # Shells
 
-Qira OS ships two shells. They are not two skins over one command set —
+QitoOS ships two shells. They are not two skins over one command set —
 they have different command tables, different prompts and different jobs.
 
 | | QCSH | UltraShell |
 | --- | --- | --- |
-| Full name | QiraConfigShell | UltraShell |
+| Full name | QitoConfigShell | UltraShell |
 | Purpose | system configuration, administration, diagnostics | general-purpose interactive work |
 | Commands | 35 | 61 |
-| Prompt | `qcsh>` | `user@qira:~$` |
+| Prompt | `qcsh>` | `user@qito:~$` |
 | Inspiration | `busybox`-style admin tools, `systemctl` | Bash and PowerShell |
 | Source | [`src/user/shells/qcsh/`](../src/user/shells/qcsh/) | [`src/user/shells/ultrashell/`](../src/user/shells/ultrashell/) |
 
@@ -61,7 +61,7 @@ kilobytes of locals in a deep call chain will overflow it.
 
 ---
 
-## QCSH — QiraConfigShell
+## QCSH — QitoConfigShell
 
 The administrator's shell. Everything here inspects or changes system
 state.
@@ -112,7 +112,7 @@ state.
 | --- | --- |
 | `df` | filesystem usage |
 | `mount` | mounted filesystems |
-| `fsck` | check QiraFS integrity |
+| `fsck` | check QitoFS integrity |
 | `netinfo` | interfaces, addresses, routes and statistics |
 | `ping <host>` | ICMP echo |
 | `users` | accounts and their capabilities |
@@ -123,27 +123,45 @@ state.
 
 ```
 qcsh> sysinfo
-Qira OS 0.3.0 (Aurora)
+QitoOS 0.4.0 (Nova)
   processor    : QEMU Virtual CPU version 2.5+ (1 core)
   memory       : 511M total, 8M used, 503M free
   uptime       : 0d 00:00:12
   display      : 1024x768x32
-  tasks        : 4 running
+  tasks        : 6 running
+  ahci         : 1 port, persistence enabled
+  qtx          : 27 services exported, Ring3 isolation
+  qdl          : 1 loaded (libdemo.qdl)
+  qti          : 12 icons loaded (16/32/64/128/256 default 64)
+  qtpkg        : 4 packages in entry.var
 
 qcsh> diag
   [ OK ]  Physical memory allocator    511M managed
   [ OK ]  Kernel heap                  8M allocated
   [ OK ]  Virtual memory               page tables consistent
-  [ OK ]  Process scheduler            running
-  [ OK ]  Root filesystem              QiraFS, 42 entries
-  [ OK ]  Interrupt controller         PIC remapped, 16 lines
-  [ OK ]  System timer                 100 Hz
-  [ OK ]  Framebuffer                  1024x768x32
+  [ OK ]  Process scheduler            running (Ring3 tasks isolated)
+  [ OK ]  Root filesystem              QitoFS, 18 entries + 12 QTI icons + 1 QTX + 1 QDL
+  [ OK ]  Interrupt controller         PIC remapped 32-47, APIC/HPET high-res timing
+  [ OK ]  System timer                 PIT 100 Hz, HPET monotonic, frame pacer 60fps
+  [ OK ]  Framebuffer                  1024x768x32 + gfx3d depth buffer
 8 checks, 8 passed
 
-qcsh> config set terminal.font qira-mono-bold
+qcsh> config set terminal.font qito-mono-bold
 qcsh> config save
-configuration written to /etc/qira.conf
+configuration written to /etc/qito.conf
+
+qcsh> qti list
+Loaded QTI icons (12), default 64 px:
+  terminal 64x64, files 64x64, etc – 5 sizes 16/32/64/128/256
+
+qcsh> qtx exports
+Kernel services available to QTX programs:
+  console_write  console_puts  kmalloc  kfree  qti_load  qti_get  etc – 27 services
+
+qcsh> qtpkg list
+PACKAGE              VERSIONS  URLS
+qasm                 2 vers: [1.0.0] [0.9.0]
+  -> 1.0.0 => http://example.com/qasm-1.0.0.qtpkg_profile
 ```
 
 ---
@@ -202,16 +220,19 @@ tick
 `source` runs a file of commands, which is how `/etc/profile` is applied
 at startup.
 
-### Networking and formats
+### Networking, executables, icons, packages and tooling
 
 | Command | Description |
 | --- | --- |
-| `fetch <url>` | HTTP GET |
+| `fetch <url>` | HTTP GET (plain HTTP only, https gives honest TLS error) |
 | `lookup <host>` | DNS resolution |
-| `git clone\|ls-remote <url>` | git smart-HTTP client |
-| `lqx info\|exports [path]` | inspect an LQX executable, list kernel exports |
-| `qac list\|info [path]` | inspect QAC icons |
-| `fonts [set <ui\|terminal> <id>]` | list or choose typefaces |
+| `qtx info\|verify\|exports\|run\|list [path]` | inspect QTX executables (QX header 88B format X, W^X, checksum), list kernel exports, run as Ring3 user task |
+| `qdl list\|load\|unload\|info [path]` | QDL dynamic libraries, format D, library flag, export table, refcounted, on-demand from /lib/*.qdl |
+| `qti list\|info [path]` | QTI icons, real pixels, 5 sizes 16/32/64/128/256 default 64, RAW/RLE/INDEX encodings, largest-first |
+| `qtpkg install\|update\|list\|search\|remove\|info\|upgrade\|-os update\|-fix os\|-fix --driver\|rollback` | package manager, entry /user/qtpkg/entry.var [version] (url); syntax, profile .qtpkg_profile, payload, checksums, TLS honest error, snapshots, -fix re-fetches corrupt |
+| `qasm <input.s> -o <output.qtx> [--shared]` | QitoOS assembler, genuine x86-64 subset (mov, add, sub, lea, jmp, call, ret, etc), directives .section .text .data etc, produces .qtx/.qdl |
+| `qcc <input.c> -o <output.qtx> [--shared]` | QitoOS C compiler, C subset (int/char/void/pointers/arrays/structs, if/else/while/for), thin driver over GCC, produces .qtx/.qdl |
+| `fonts [set <ui\|terminal> <id>]` | list or choose typefaces qito-sans/mono, 8x16, bold derived row\|(row>>1) |
 
 ### Utilities
 

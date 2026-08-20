@@ -1,4 +1,4 @@
-# Qira OS architecture
+# QitoOS architecture
 
 How the system is put together, from the first instruction the firmware runs
 to a window on screen.
@@ -23,7 +23,7 @@ boot image for a **boot information table** that the ISO writer patches in:
 | Offset | Contents |
 | --- | --- |
 | `0x00` | `jmp stage1_main` followed by `nop` |
-| `0x03` | `"QIRA1"` signature |
+| `0x03` | `"QITO1"` signature |
 | `0x08` | 56-byte boot information table (written by `tools/mkiso.py`) |
 | `0x40` | Stage 1 code |
 | `0x1FE` | `0xAA55` |
@@ -65,7 +65,7 @@ Stage 2 does the real work of preparing the machine:
    `CR0.PG|CR0.PE`, and far jump into 64-bit code.
 
 Control passes to the kernel entry point with `RDI` pointing at the boot
-information block and `RSI` holding the magic value `QBOI`.
+information block and `RSI` holding the magic value `QTBI`.
 
 ### 1.3 The boot protocol
 
@@ -73,8 +73,8 @@ information block and `RSI` holding the magic value `QBOI`.
 loader and the kernel so the two cannot disagree:
 
 ```c
-struct qira_boot_info {
-    uint32_t magic;          /* 'QBOI' */
+struct qito_boot_info {
+    uint32_t magic;          /* 'QTBI' */
     uint32_t version;
     uint64_t kernel_phys, kernel_size;
     uint64_t ramdisk_phys, ramdisk_size;
@@ -216,11 +216,11 @@ table with any of `read`, `write`, `truncate`, `open`, `close` and `refresh`.
 readdir, letting procfs regenerate a node's contents from live kernel state at
 the moment it is read rather than caching a stale snapshot.
 
-**QiraFS** is the root filesystem, unpacked from the boot ramdisk. The image
+**QitoFS** is the root filesystem, unpacked from the boot ramdisk. The image
 is a 72-byte header, a table of 232-byte entries, then the file data:
 
 ```
-header   magic "QIRAFS01", version, entry count, total size,
+header   magic "QITOFS01", version, entry count, total size,
          data offset, flags, checksum, volume label
 entry    absolute path, type, permissions, size, offset,
          modification time, uid, gid
@@ -314,7 +314,7 @@ for anything added without further wiring.
 
 Commands are C functions, so there is no `fork()`. A pipeline runs each stage
 with its output captured into a `struct shell_sink`; the captured text is
-handed to the next stage through the `QIRA_PIPE_INPUT` variable, which
+handed to the next stage through the `QITO_PIPE_INPUT` variable, which
 commands like `grep` and `sort` read when given no file argument.
 
 The observable behaviour matches a real pipeline, and the same sink mechanism
@@ -352,7 +352,7 @@ the result structurally, and the boot tests confirm it actually boots.
 | `src/kernel/mm/` | Physical, virtual and heap allocators |
 | `src/kernel/sched/` | Scheduler |
 | `src/kernel/sys/` | Syscalls, IPC, configuration, services, packages, power |
-| `src/kernel/fs/` | VFS, QiraFS, devfs, procfs |
+| `src/kernel/fs/` | VFS, QitoFS, devfs, procfs |
 | `src/kernel/drivers/` | Serial, keyboard, mouse, PCI, audio |
 | `src/kernel/net/` | IPv4 stack and NE2000 |
 | `src/kernel/gfx/` | Rasteriser, console, framebuffer capture |

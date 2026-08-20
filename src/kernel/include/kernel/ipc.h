@@ -1,11 +1,11 @@
 /*
- * Qira OS - inter-process communication
+ * QitoOS - inter-process communication
  *
  * Provides fixed-size message queues that kernel tasks use to talk to each
  * other without sharing memory, plus byte-stream pipes.
  */
-#ifndef QIRA_IPC_H
-#define QIRA_IPC_H
+#ifndef QITO_IPC_H
+#define QITO_IPC_H
 
 #include <kernel/types.h>
 
@@ -53,4 +53,4 @@ uint64_t ipc_messages_sent(void);
 uint64_t ipc_messages_dropped(void);
 int      ipc_port_count(void);
 
-#endif /* QIRA_IPC_H */
+#endif /* QITO_IPC_H */

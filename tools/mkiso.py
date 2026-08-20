@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-mkiso.py - build the bootable Qira OS ISO image.
+mkiso.py - build the bootable QitoOS ISO image.
 
-Takes the flat bootloader blob, the flattened kernel image and the QiraFS
+Takes the flat bootloader blob, the flattened kernel image and the QitoFS
 ramdisk, lays them out on an ISO 9660 filesystem, patches the bootloader's
 payload table so stage 2 knows where to find everything, and writes an El
 Torito no-emulation bootable image.
 
 Usage:
-    mkiso.py --boot build/boot.bin --kernel build/qira-kernel.bin \\
-             --ramdisk build/qirafs.img --output build/qira-os.iso
+    mkiso.py --boot build/boot.bin --kernel build/qito-kernel.bin \\
+             --ramdisk build/qitofs.img --output build/qito-os.iso
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from isofs import SECTOR, IsoBuilder, align_up  # noqa: E402
 
-PAYLOAD_SIGNATURE = b"QIRAPLD1"
-CMDLINE_MARKER = b"QIRACMDLINE:"
+PAYLOAD_SIGNATURE = b"QITOPLD1"
+CMDLINE_MARKER = b"QITOCMDLINE:"
 CMDLINE_SIZE = 256
 
 
@@ -88,18 +88,18 @@ def read_file(path: str) -> bytes:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the Qira OS ISO image")
+    parser = argparse.ArgumentParser(description="Build the QitoOS ISO image")
     parser.add_argument("--boot", required=True, help="flat bootloader binary")
     parser.add_argument("--kernel", required=True, help="flat kernel image")
-    parser.add_argument("--ramdisk", help="QiraFS ramdisk image (optional)")
+    parser.add_argument("--ramdisk", help="QitoFS ramdisk image (optional)")
     parser.add_argument("--output", required=True, help="ISO file to write")
-    parser.add_argument("--volume-id", default="QIRAOS", help="ISO volume label")
+    parser.add_argument("--volume-id", default="QITOOS", help="ISO volume label")
     parser.add_argument(
         "--version", default="dev", help="version string recorded on the image"
     )
     parser.add_argument(
         "--cmdline",
-        default="root=qirafs console=fb",
+        default="root=qitofs console=fb",
         help="kernel command line embedded in the bootloader",
     )
     args = parser.parse_args()
@@ -116,27 +116,27 @@ def main() -> int:
     if not patch_cmdline(boot, args.cmdline):
         raise SystemExit("error: kernel command line marker not found in the loader")
 
-    builder = IsoBuilder(volume_id=args.volume_id, app_id="QIRA OS")
+    builder = IsoBuilder(volume_id=args.volume_id, app_id="QITO OS")
 
     # The boot image must be added first so that later passes can find it.
-    builder.add_boot_image("boot/qiraboot.bin", bytes(boot))
+    builder.add_boot_image("boot/qitoboot.bin", bytes(boot))
     kernel_node = builder.add_file("boot/qkernel.bin", kernel)
-    ramdisk_node = builder.add_file("boot/qirafs.img", ramdisk) if ramdisk else None
+    ramdisk_node = builder.add_file("boot/qitofs.img", ramdisk) if ramdisk else None
 
     # A couple of human-readable artefacts so a mounted ISO is self-describing.
     builder.add_file(
         "readme.txt",
         (
-            "Qira OS %s\r\n"
+            "QitoOS %s\r\n"
             "A from-scratch x86_64 operating system.\r\n\r\n"
             "This disc is bootable on BIOS machines and virtual machines.\r\n"
             "Boot it with:\r\n"
-            "    qemu-system-x86_64 -cdrom qira-os.iso -m 512\r\n\r\n"
-            "https://github.com/Seigh-sword/QiraOS\r\n" % args.version
+            "    qemu-system-x86_64 -cdrom qito-os.iso -m 512\r\n\r\n"
+            "https://github.com/qitoteam/QitoOS\r\n" % args.version
         ).encode("ascii"),
     )
     builder.add_file(
-        "boot/version.txt", ("qira-os %s\r\n" % args.version).encode("ascii")
+        "boot/version.txt", ("qito-os %s\r\n" % args.version).encode("ascii")
     )
 
     # First pass: lay the image out so the payload extents are known.
@@ -160,23 +160,23 @@ def main() -> int:
 
     # Second pass with the patched loader. Sizes are unchanged, so the layout
     # computed above still holds.
-    builder2 = IsoBuilder(volume_id=args.volume_id, app_id="QIRA OS")
-    builder2.add_boot_image("boot/qiraboot.bin", bytes(boot))
+    builder2 = IsoBuilder(volume_id=args.volume_id, app_id="QITO OS")
+    builder2.add_boot_image("boot/qitoboot.bin", bytes(boot))
     kernel_node2 = builder2.add_file("boot/qkernel.bin", kernel)
-    ramdisk_node2 = builder2.add_file("boot/qirafs.img", ramdisk) if ramdisk else None
+    ramdisk_node2 = builder2.add_file("boot/qitofs.img", ramdisk) if ramdisk else None
     builder2.add_file(
         "readme.txt",
         (
-            "Qira OS %s\r\n"
+            "QitoOS %s\r\n"
             "A from-scratch x86_64 operating system.\r\n\r\n"
             "This disc is bootable on BIOS machines and virtual machines.\r\n"
             "Boot it with:\r\n"
-            "    qemu-system-x86_64 -cdrom qira-os.iso -m 512\r\n\r\n"
-            "https://github.com/Seigh-sword/QiraOS\r\n" % args.version
+            "    qemu-system-x86_64 -cdrom qito-os.iso -m 512\r\n\r\n"
+            "https://github.com/qitoteam/QitoOS\r\n" % args.version
         ).encode("ascii"),
     )
     builder2.add_file(
-        "boot/version.txt", ("qira-os %s\r\n" % args.version).encode("ascii")
+        "boot/version.txt", ("qito-os %s\r\n" % args.version).encode("ascii")
     )
 
     image = builder2.build()
@@ -191,7 +191,7 @@ def main() -> int:
     with open(args.output, "wb") as handle:
         handle.write(image)
 
-    print("Qira OS image: %s" % args.output)
+    print("QitoOS image: %s" % args.output)
     print("  volume id      : %s" % args.volume_id)
     print("  total size     : %d bytes (%d sectors)" % (len(image), len(image) // SECTOR))
     print("  bootloader     : %d bytes" % len(boot))

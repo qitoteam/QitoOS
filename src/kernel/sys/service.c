@@ -1,5 +1,5 @@
 /*
- * Qira OS - service manager
+ * QitoOS - service manager
  */
 
 #include <kernel/service.h>

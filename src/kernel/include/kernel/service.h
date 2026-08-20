@@ -1,11 +1,11 @@
 /*
- * Qira OS - service manager
+ * QitoOS - service manager
  *
  * Long-running kernel tasks are registered as services so they can be listed,
  * started and stopped from QCSH, and so their state is visible in one place.
  */
-#ifndef QIRA_SERVICE_H
-#define QIRA_SERVICE_H
+#ifndef QITO_SERVICE_H
+#define QITO_SERVICE_H
 
 #include <kernel/types.h>
 #include <kernel/sched.h>
@@ -51,4 +51,4 @@ void service_list(struct shell *sh);
 int  service_count(void);
 const struct service *service_at(int index);
 
-#endif /* QIRA_SERVICE_H */
+#endif /* QITO_SERVICE_H */

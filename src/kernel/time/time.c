@@ -1,5 +1,5 @@
 /*
- * Qira OS - timekeeping
+ * QitoOS - timekeeping
  *
  * Combines three sources:
  *   - the 8253/8254 PIT, programmed to TIMER_HZ for the scheduler tick,
@@ -148,9 +148,9 @@ static uint8_t bcd_to_bin(uint8_t value)
     return (uint8_t)((value & 0x0F) + ((value >> 4) * 10));
 }
 
-void rtc_read(struct qira_time *out)
+void rtc_read(struct qito_time *out)
 {
-    struct qira_time first, second;
+    struct qito_time first, second;
     int              guard = 0;
 
     memset(out, 0, sizeof(*out));
@@ -223,7 +223,7 @@ static bool_t is_leap(int year)
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
-uint64_t time_to_unix(const struct qira_time *t)
+uint64_t time_to_unix(const struct qito_time *t)
 {
     uint64_t days = 0;
 
@@ -242,7 +242,7 @@ uint64_t time_to_unix(const struct qira_time *t)
            (uint64_t)t->second;
 }
 
-void time_from_unix(uint64_t unix_time, struct qira_time *out)
+void time_from_unix(uint64_t unix_time, struct qito_time *out)
 {
     uint64_t days    = unix_time / 86400u;
     uint64_t seconds = unix_time % 86400u;
@@ -287,7 +287,7 @@ uint64_t rtc_unix_time(void)
     return boot_unix_time + time_uptime_ms() / 1000u;
 }
 
-void time_format(const struct qira_time *t, char *buf, size_t size)
+void time_format(const struct qito_time *t, char *buf, size_t size)
 {
     extern int snprintf(char *, size_t, const char *, ...);
     snprintf(buf, size, "%04d-%02d-%02d %02d:%02d:%02d", t->year, t->month, t->day,
@@ -307,7 +307,7 @@ void time_init(void)
 {
     tick_count = 0;
 
-    struct qira_time now;
+    struct qito_time now;
     rtc_read(&now);
     boot_unix_time = time_to_unix(&now);
 
@@ -321,6 +321,10 @@ void time_init(void)
     irq_register(IRQ_TIMER, timer_irq_handler, NULL, "pit-timer");
 
     KLOG_INFO("time", "PIT programmed to %d Hz", TIMER_HZ);
+
+    // Initialize HPET for high-resolution timing and frame pacing
+    extern void hpet_init(void);
+    hpet_init();
 }
 
 void time_udelay(uint32_t us)

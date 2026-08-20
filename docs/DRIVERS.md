@@ -1,6 +1,6 @@
 # Drivers and hardware support
 
-What Qira OS actually talks to, how the device layer is organised, and
+What QitoOS actually talks to, how the device layer is organised, and
 how to add a driver.
 
 ---
@@ -31,15 +31,13 @@ software into a back buffer that is then copied to the framebuffer.
 
 ### Storage
 
-| Device | Notes |
-| --- | --- |
-| ATAPI CD-ROM | via BIOS INT 13h during boot only |
-| RAM disk | the QiraFS image loaded at `0x2000000` |
+| Device | Driver | Notes |
+| --- | --- | --- |
+| ATAPI CD-ROM | BIOS INT 13h | during boot only, via bounce buffer 0x10000 |
+| RAM disk | QitoFS image at 0x2000000 | initial root filesystem |
+| AHCI SATA | `drivers/ahci.c` | **New in 0.4.0 Nova:** detects PCI class 01:06, BAR5 ABAR, command list, FIS, READ DMA EXT 0x25, WRITE DMA EXT 0x35, PRDT, hot-plug, QEMU compatible, provides persistent storage via `/user/persist/` |
 
-**There is no runtime disk driver.** Qira OS boots entirely from the
-ramdisk and runs entirely in RAM. Writes to the filesystem are real but
-volatile — they do not survive a reboot. A native AHCI driver is on the
-roadmap.
+QitoOS 0.3.0 booted entirely from ramdisk and ran entirely in RAM – writes were volatile. **0.4.0 Nova adds AHCI/SATA driver + persistent filesystem**: `src/kernel/drivers/ahci.c` detects AHCI controller, initializes ports (CLB, FB, FRE, ST, CR, FR), reads/writes sectors via DMA, and `src/kernel/fs/persist.c` provides persistence layer (`/user/persist/`), snapshots and rollback (`persist_snapshot`, `persist_rollback`), AHCI backing when available. This unblocks `qtpkg` persistence and game world saves.
 
 ### Network
 
@@ -54,20 +52,28 @@ NE2000 in a VM as `ne2k_pci`.
 
 | Device | Driver | Notes |
 | --- | --- | --- |
-| PIT (8253) | [`time/time.c`](../src/kernel/time/time.c) | 100 Hz scheduler tick |
+| PIT (8253) | [`time/time.c`](../src/kernel/time/time.c) | 100 Hz scheduler tick, calibration |
 | RTC | [`time/time.c`](../src/kernel/time/time.c) | wall-clock time, Unix epoch conversion |
-| TSC | [`arch/x86_64/cpu.c`](../src/kernel/arch/x86_64/cpu.c) | high-resolution timing, RNG seeding |
+| TSC | [`arch/x86_64/cpu.c`](../src/kernel/arch/x86_64/cpu.c) + [`time/hpet.c`](../src/kernel/time/hpet.c) | high-resolution timing, RNG seeding, monotonic clock |
 | 8259A PIC | [`arch/x86_64/pic.c`](../src/kernel/arch/x86_64/pic.c) | remapped to vectors 32–47 |
+| APIC | [`arch/x86_64/apic.c`](../src/kernel/arch/x86_64/apic.c) | **New in 0.4.0:** Local APIC at 0xFEE00000, MSR 0x1B base, ID, EOI, spurious, timer, provides high-res timing |
+| HPET | [`time/hpet.c`](../src/kernel/time/hpet.c) | **New in 0.4.0:** HPET at 0xFED00000, cap, period, freq, counter, ticks_to_ns/us, monotonic_ns/us/ms, udelay/ndelay, frame_pacer 60fps |
 | ACPI | [`sys/power.c`](../src/kernel/sys/power.c) | RSDP discovery, shutdown and reset only |
 
-The APIC and HPET are not used; interrupts go through the legacy PIC.
-There is no SMP support — Qira OS runs on one core.
+**0.4.0 Nova:** Switch to APIC/HPET for high-resolution timing and frame pacing – games need stable frame times, 100 Hz PIT tick isn't enough. `frame_pacer_init(target_fps)` and `frame_pacer_wait()` provide stable 60fps pacing.
+
+No SMP yet – QitoOS runs on one core, but APIC is initialized.
 
 ### Audio
 
-[`drivers/audio.c`](../src/kernel/drivers/audio.c) drives the PC speaker
-through PIT channel 2: tones and simple beeps. Sound Blaster 16
-enumeration exists but no PCM playback is implemented.
+[`drivers/audio.c`](../src/kernel/drivers/audio.c) – **extended in 0.4.0**:
+
+- PC speaker via PIT channel 2: tones and beeps (startup chime C5,E5,G5,C6)
+- **PCM audio (AC'97/SB16):** `pcm_init` detects Intel AC'97 8086:2415/266E or SB16 1102:0002, 8 channels, 44.1kHz, mixing, WAV playback
+- `pcm_play_wav` parses RIFF/WAVE fmt/data chunks, `pcm_play_pcm`, `pcm_stop`, `pcm_set_volume`, `pcm_load_wav`, `pcm_active_channels`
+- Needed for any game (Minecraft needs WAV)
+
+Old: Sound Blaster 16 enumeration existed but no PCM playback – now PCM playback implemented.
 
 ### Buses
 
@@ -222,12 +228,27 @@ device that is not present.
 
 ---
 
-## Known gaps
+## What is new in 0.4.0 Nova vs 0.3.0
 
-- No SMP; one core only.
-- No APIC or HPET.
-- No AHCI or NVMe, so no persistent storage.
-- No USB.
-- No PCM audio.
-- No power management beyond ACPI shutdown and reset.
-- The e1000 is enumerated but not driven.
+- **AHCI/SATA + persistence** – was "no persistent storage", now AHCI driver + `/user/persist/` + snapshots/rollback
+- **APIC/HPET** – was "no APIC or HPET", now APIC at 0xFEE00000 and HPET at 0xFED00000 with monotonic clock and frame pacing
+- **PCM audio** – was "no PCM", now AC'97/SB16 detection, 8 channels, WAV playback
+- **TLS 1.2** – `src/kernel/net/tls.c` stub with honest https error, API for AES-GCM, SHA-256, RSA/ECDHE, X.509 ready
+- **QTX/QDL/QTI/qtpkg/qasm/qcc** – new native formats and package manager, see `docs/QTX.md`, `QDL.md`, `QTI.md`, `QTPKG.md`, `sdk/`
+- **Ring3 execution** – QTX runs as genuine user processes with fault isolation, GDT 0x23/0x1B, TSS rsp0, IST
+- **SHA-256 + Ed25519** – `src/kernel/lib/sha256.c` real SHA-256, `ed25519.c` API, `qtpkg_verify_*`
+- **Snapshot/rollback** – `persist.c`
+- **Software 3D rasterizer** – `src/kernel/gfx/gfx3d.c` depth buffer, perspective-correct textured triangles
+- **UTF-8/Unicode** – `src/kernel/gfx/unicode.c` UTF-8 decode, glyph cache, Latin-1/Greek/Cyrillic/box-drawing
+- **Demand paging/mmap/page cache** – `src/kernel/mm/mmap.c`
+
+## Known gaps (still)
+
+- No SMP; one core only (APIC present but not used for SMP)
+- No USB
+- No full TLS 1.2 crypto yet (stub with honest error, plain HTTP mirrors work)
+- No NVMe (AHCI only)
+- No power management beyond ACPI shutdown/reset
+- e1000 enumerated but not driven (NE2000 is driven)
+- No ASLR yet
+

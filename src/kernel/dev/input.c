@@ -1,5 +1,5 @@
 /*
- * Qira OS - input event queue
+ * QitoOS - input event queue
  *
  * A lock-free-ish ring buffer between the interrupt-driven drivers and the
  * desktop/console consumers. The queue is small and drops the oldest event on

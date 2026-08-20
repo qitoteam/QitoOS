@@ -1,5 +1,5 @@
 /*
- * Qira OS - UltraShell
+ * QitoOS - UltraShell
  *
  * The general-purpose interactive shell, inspired by the ergonomics of Bash
  * and the discoverability of PowerShell. UltraShell owns everyday work:
@@ -27,7 +27,7 @@ static struct shell ultrashell;
 /* Read the piped-in text, if any. */
 static const char *pipe_input(struct shell *sh)
 {
-    return shell_get_var(sh, "QIRA_PIPE_INPUT");
+    return shell_get_var(sh, "QITO_PIPE_INPUT");
 }
 
 /* --- navigation ------------------------------------------------------- */
@@ -163,7 +163,7 @@ static int cmd_ls(struct shell *sh, int argc, char **argv)
             if (fs_stat(child_path, &st) == 0) {
                 fs_format_permissions(st.permissions, (fs_node_type_t)st.type,
                                       perms);
-                struct qira_time t;
+                struct qito_time t;
                 time_from_unix(st.modified, &t);
                 snprintf(stamp, sizeof(stamp), "%04d-%02d-%02d %02d:%02d", t.year,
                          t.month, t.day, t.hour, t.minute);
@@ -772,7 +772,7 @@ static int cmd_mkdir(struct shell *sh, int argc, char **argv)
 
         int error = fs_mkdir(resolved, 0755);
         if (error != 0) {
-            shell_error(sh, "mkdir: %s: %s", argv[i], qira_strerror(error));
+            shell_error(sh, "mkdir: %s: %s", argv[i], qito_strerror(error));
             return 1;
         }
     }
@@ -823,7 +823,7 @@ static int cmd_rm(struct shell *sh, int argc, char **argv)
 
         int error = fs_unlink(resolved);
         if (error != 0) {
-            shell_error(sh, "rm: %s: %s", argv[i], qira_strerror(error));
+            shell_error(sh, "rm: %s: %s", argv[i], qito_strerror(error));
             status = 1;
         }
     }
@@ -907,7 +907,7 @@ static int cmd_mv(struct shell *sh, int argc, char **argv)
 
     int error = fs_rename(source, dest);
     if (error != 0) {
-        shell_error(sh, "mv: %s", qira_strerror(error));
+        shell_error(sh, "mv: %s", qito_strerror(error));
         return 1;
     }
     return 0;
@@ -934,7 +934,7 @@ static int cmd_write(struct shell *sh, int argc, char **argv)
 
     int error = fs_write_file(resolved, content, strlen(content));
     if (error != 0) {
-        shell_error(sh, "write: %s: %s", argv[1], qira_strerror(error));
+        shell_error(sh, "write: %s: %s", argv[1], qito_strerror(error));
         return 1;
     }
     return 0;
@@ -953,14 +953,14 @@ static int cmd_stat(struct shell *sh, int argc, char **argv)
     struct fs_stat st;
     int error = fs_stat(resolved, &st);
     if (error != 0) {
-        shell_error(sh, "stat: %s: %s", argv[1], qira_strerror(error));
+        shell_error(sh, "stat: %s: %s", argv[1], qito_strerror(error));
         return 1;
     }
 
     char perms[12];
     fs_format_permissions(st.permissions, (fs_node_type_t)st.type, perms);
 
-    struct qira_time created, modified;
+    struct qito_time created, modified;
     time_from_unix(st.created, &created);
     time_from_unix(st.modified, &modified);
 
@@ -1480,7 +1480,7 @@ static int cmd_date(struct shell *sh, int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    struct qira_time now;
+    struct qito_time now;
     time_from_unix(rtc_unix_time(), &now);
 
     static const char *weekdays[] = {"Sunday",   "Monday", "Tuesday", "Wednesday",
@@ -1567,10 +1567,10 @@ static int cmd_version(struct shell *sh, int argc, char **argv)
     shell_color(sh, "\033[96m");
     shell_printf(sh, "UltraShell");
     shell_reset_color(sh);
-    shell_printf(sh, " - the Qira OS general-purpose shell\n");
-    shell_printf(sh, "Part of %s %s (%s)\n", QIRA_PROJECT_NAME,
-                 QIRA_VERSION_STRING, QIRA_CODENAME);
-    shell_printf(sh, "Build %s, %s\n", QIRA_BUILD_ID, QIRA_BUILD_DATE);
+    shell_printf(sh, " - the QitoOS general-purpose shell\n");
+    shell_printf(sh, "Part of %s %s (%s)\n", QITO_PROJECT_NAME,
+                 QITO_VERSION_STRING, QITO_CODENAME);
+    shell_printf(sh, "Build %s, %s\n", QITO_BUILD_ID, QITO_BUILD_DATE);
     shell_printf(sh, "%d built-in commands available.\n", sh->command_count);
     return 0;
 }
@@ -1601,7 +1601,7 @@ static int cmd_qcsh(struct shell *sh, int argc, char **argv)
      */
     sh->switch_request = "qcsh";
     config->running    = true;
-    shell_printf(sh, "Switching to QiraConfigShell. Type 'ush' to return.\n");
+    shell_printf(sh, "Switching to QitoConfigShell. Type 'ush' to return.\n");
     return 0;
 }
 
@@ -1698,7 +1698,7 @@ static const struct shell_command commands[] = {
     {"help", "list commands or describe one", "help [command]", NULL,
      shell_builtin_help, 0},
     {"version", "show shell and system version", "version", NULL, cmd_version, 0},
-    {"qcsh", "run a QiraConfigShell command", "qcsh [command...]",
+    {"qcsh", "run a QitoConfigShell command", "qcsh [command...]",
      "With no arguments, switches to an interactive QCSH session.\n"
      "Otherwise runs a single QCSH command and returns the result here.",
      cmd_qcsh, 0},

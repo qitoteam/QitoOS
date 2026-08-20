@@ -1,6 +1,6 @@
-# The Qira OS boot process
+# The QitoOS boot process
 
-From power-on to the desktop, in the order it actually happens. Qira OS
+From power-on to the desktop, in the order it actually happens. QitoOS
 uses its own two-stage BIOS bootloader rather than GRUB or Limine, so
 every step below is code in this repository.
 
@@ -21,7 +21,7 @@ BIOS  ──►  stage 1        512 B, real mode, loaded at 0x7C00
            stage 2        real mode → unreal → protected → long mode
            │  E820 map, VBE framebuffer, disk reads, page tables
            ▼
-           kernel entry   long mode, RDI = boot info, magic "QBOI"
+           kernel entry   long mode, RDI = boot info, magic "QTBI"
            │
            ▼
            kmain()        CPU, memory, devices, filesystem, desktop
@@ -38,7 +38,7 @@ Its layout is unusual in one important respect:
 | Offset | Contents |
 | ---: | --- |
 | `0x00` | `jmp` over the header, plus a `nop` |
-| `0x03` | `"QIRA1"` signature |
+| `0x03` | `"QITO1"` signature |
 | `0x08` | **56-byte El Torito boot information table** |
 | `0x40` | actual code starts here |
 | `0x1FE` | `0xAA55` boot signature |
@@ -61,11 +61,11 @@ It then jumps to stage 2 at offset `0x200`.
 
 `tools/mkiso.py` needs to tell the loader where the kernel and ramdisk
 ended up on the disc. It patches a table at **offset 512** of the boot
-image, marked by the signature `QIRAPLD1`:
+image, marked by the signature `QITOPLD1`:
 
 | Offset | Size | Field |
 | ---: | ---: | --- |
-| 0 | 8 | `"QIRAPLD1"` |
+| 0 | 8 | `"QITOPLD1"` |
 | 8 | 4 | `kernel_lba` |
 | 12 | 4 | `kernel_sectors` |
 | 16 | 4 | `kernel_size` |
@@ -113,7 +113,7 @@ Stage 2 is where the real work happens. In order:
    64-bit code.
 
 7. **Jump to the kernel** at virtual `0xFFFFFFFF80100000` with `RDI`
-   pointing at the boot info block and `RAX` holding the magic `QBOI`.
+   pointing at the boot info block and `RAX` holding the magic `QTBI`.
 
 ---
 
@@ -130,17 +130,17 @@ both.
 | `0x20000` | PML4 and initial page tables |
 | `0x90000` | long-mode stack |
 | `0x100000` | kernel image |
-| `0x2000000` | ramdisk (QiraFS image) |
+| `0x2000000` | ramdisk (QitoFS image) |
 
 Kernel entry point: virtual `0xFFFFFFFF80100000`, `RDI = 0x18000`,
-`RAX = "QBOI"`.
+`RAX = "QTBI"`.
 
 ---
 
 ## The kernel command line
 
 Stage 2 embeds a **256-byte** field introduced by the marker
-`QIRACMDLINE:`. `mkiso.py` finds the marker and overwrites the whole
+`QITOCMDLINE:`. `mkiso.py` finds the marker and overwrites the whole
 field with a NUL-terminated string, so boot options can be changed by
 rebuilding the ISO without reassembling the loader.
 
@@ -155,7 +155,7 @@ rebuilding the ISO without reassembling the loader.
 
 | Option | Effect |
 | --- | --- |
-| `root=qirafs` | mount the ramdisk as the root filesystem |
+| `root=qitofs` | mount the ramdisk as the root filesystem |
 | `console=fb` | use the framebuffer console |
 | `loglevel=<n>` | 0 quiet … 4 debug |
 | `echo=serial` | mirror shell input and output to COM1 |
@@ -175,6 +175,13 @@ Build an image with custom options:
 make iso CMDLINE_EXTRA="loglevel=4 autorun=selftest"
 ```
 
+And note the new formats work in autorun as well:
+
+```sh
+make iso CMDLINE_EXTRA="autorun=qti_list;qtx_exports;qdl_list;qtpkg_list;capture=3000"
+# underscores become spaces still applies: qti_info_/usr/share/icons/terminal.qti -> qti info /usr/share/icons/terminal.qti
+```
+
 ---
 
 ## Kernel initialisation
@@ -189,8 +196,8 @@ Once the framebuffer is up, each one advances the splash screen.
 | 3 | memory | physical allocator, virtual memory, kernel heap |
 | 4 | time | PIT and RTC, then `sti` |
 | 5 | devices | PCI enumeration, keyboard, mouse, serial, storage, network |
-| 6 | filesystem | mount the QiraFS ramdisk, then devfs and procfs |
-| 7 | assets | fonts, QAC icons, the LQX loader |
+| 6 | filesystem | mount the QitoFS ramdisk, then devfs and procfs |
+| 7 | assets | fonts (qito-sans/mono), QTI icons (16/32/64/128/256 default 64), QTX/QDL loader, qtpkg registry |
 | 8 | services | configuration, logging, packages, networking stack |
 | 9 | userspace | create the init task |
 | 10 | scheduler | `sched_start()` — the first timer tick switches away |
@@ -233,13 +240,13 @@ Almost every boot problem is visible there.
 
 ```sh
 make iso CMDLINE_EXTRA="loglevel=4 echo=serial"
-qemu-system-x86_64 -cdrom build/qira-os.iso -serial stdio -m 512
+qemu-system-x86_64 -cdrom build/qito-os.iso -serial stdio -m 512
 ```
 
 **Check the image structure** without booting it:
 
 ```sh
-python3 scripts/validate-iso.py build/qira-os.iso
+python3 scripts/validate-iso.py build/qito-os.iso
 python3 tools/checkboot.py build/boot.bin
 ```
 

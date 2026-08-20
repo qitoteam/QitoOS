@@ -1,5 +1,5 @@
 /*
- * Qira OS - Notes
+ * QitoOS - Notes
  *
  * A multi-note scratchpad. Each note is a file under /home/user/notes, so
  * anything written here is visible from the shell and the file manager too.
@@ -178,7 +178,7 @@ static void notes_save(struct notes_state *state)
                     sizeof(state->notes[0].title));
         }
 
-        struct qira_time now;
+        struct qito_time now;
         time_from_unix(rtc_unix_time(), &now);
         snprintf(state->status, sizeof(state->status), "saved at %02d:%02d:%02d",
                  now.hour, now.minute, now.second);
@@ -197,7 +197,7 @@ static void notes_create(struct notes_state *state)
 
     struct note *note = &state->notes[state->note_count];
 
-    struct qira_time now;
+    struct qito_time now;
     time_from_unix(rtc_unix_time(), &now);
     snprintf(note->title, sizeof(note->title), "Note %02d-%02d %02d:%02d",
              now.day, now.month, now.hour, now.minute);

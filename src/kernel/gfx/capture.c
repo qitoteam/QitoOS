@@ -1,5 +1,5 @@
 /*
- * Qira OS - framebuffer capture over the serial port
+ * QitoOS - framebuffer capture over the serial port
  *
  * Emulators running headless give no way to look at the screen, which makes
  * graphical regressions invisible to automated tests. This module streams the
@@ -32,8 +32,8 @@
 #include <kernel/printf.h>
 #include <kernel/time.h>
 
-#define CAPTURE_BEGIN "\n--QIRA-FRAME-BEGIN "
-#define CAPTURE_END   "\n--QIRA-FRAME-END--\n"
+#define CAPTURE_BEGIN "\n--QITO-FRAME-BEGIN "
+#define CAPTURE_END   "\n--QITO-FRAME-END--\n"
 
 static const char base64_alphabet[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

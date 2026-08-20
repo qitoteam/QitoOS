@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-grabframe.py - extract framebuffer captures from a Qira OS serial log.
+grabframe.py - extract framebuffer captures from a QitoOS serial log.
 
 The kernel streams the composited desktop out of COM1 as base64 RGB between
-``--QIRA-FRAME-BEGIN`` and ``--QIRA-FRAME-END--`` markers (see
+``--QITO-FRAME-BEGIN`` and ``--QITO-FRAME-END--`` markers (see
 src/kernel/gfx/capture.c). This tool finds those blocks and writes each one out
 as a PNG, which is how the project produces screenshots and how the automated
 boot tests check what actually appeared on screen.
@@ -23,8 +23,8 @@ import struct
 import sys
 import zlib
 
-BEGIN = re.compile(r"--QIRA-FRAME-BEGIN (\d+)x(\d+) (\w+) (\S*)")
-END = "--QIRA-FRAME-END--"
+BEGIN = re.compile(r"--QITO-FRAME-BEGIN (\d+)x(\d+) (\w+) (\S*)")
+END = "--QITO-FRAME-END--"
 
 
 def write_png(path: str, width: int, height: int, rgb: bytes) -> None:
@@ -132,7 +132,7 @@ def extract(log_text: str) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Extract Qira OS framebuffer captures from a serial log"
+        description="Extract QitoOS framebuffer captures from a serial log"
     )
     parser.add_argument("--log", required=True, help="serial log to read")
     parser.add_argument("--output", required=True, help="PNG path (or prefix)")

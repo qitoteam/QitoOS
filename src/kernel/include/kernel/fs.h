@@ -1,12 +1,12 @@
 /*
- * Qira OS - virtual filesystem
+ * QitoOS - virtual filesystem
  *
- * A node-based VFS with pluggable backends. QiraFS (an in-memory filesystem
+ * A node-based VFS with pluggable backends. QitoFS (an in-memory filesystem
  * seeded from the boot ramdisk) provides the root; devfs exposes device
  * nodes; procfs exposes live kernel state as readable text files.
  */
-#ifndef QIRA_FS_H
-#define QIRA_FS_H
+#ifndef QITO_FS_H
+#define QITO_FS_H
 
 #include <kernel/types.h>
 
@@ -71,7 +71,7 @@ struct fs_node {
 
     uint64_t        size;
     uint64_t        capacity;
-    uint8_t        *data;          /* in-memory contents for QiraFS      */
+    uint8_t        *data;          /* in-memory contents for QitoFS      */
 
     uint64_t        created;       /* unix timestamps                    */
     uint64_t        modified;
@@ -113,7 +113,7 @@ struct fs_dirent {
 };
 
 void fs_init(void);
-/* Populate the root filesystem from a QiraFS ramdisk image. */
+/* Populate the root filesystem from a QitoFS ramdisk image. */
 int  fs_mount_ramdisk(const void *image, size_t size);
 
 struct fs_node *fs_root(void);
@@ -166,4 +166,4 @@ void fs_get_statistics(struct fs_statistics *out);
 /* Permission check against the current task's credentials. */
 bool_t fs_can_access(struct fs_node *node, uint32_t want_flags);
 
-#endif /* QIRA_FS_H */
+#endif /* QITO_FS_H */

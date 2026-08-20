@@ -1,13 +1,13 @@
 /*
- * Qira OS - framebuffer graphics
+ * QitoOS - framebuffer graphics
  *
  * A simple 32-bit ARGB software rasteriser over the linear framebuffer that
  * the bootloader programmed through VBE. All drawing goes to an off-screen
  * back buffer which is then flushed to video memory, so the desktop never
  * shows partially drawn frames.
  */
-#ifndef QIRA_FB_H
-#define QIRA_FB_H
+#ifndef QITO_FB_H
+#define QITO_FB_H
 
 #include <kernel/types.h>
 #include "../../../boot/bootinfo.h"
@@ -39,7 +39,7 @@ struct fb_info {
     uint64_t  frames;
 };
 
-bool_t fb_init(const struct qira_boot_info *boot);
+bool_t fb_init(const struct qito_boot_info *boot);
 const struct fb_info *fb_get_info(void);
 bool_t fb_available(void);
 
@@ -135,4 +135,4 @@ int fb_screenshot(const char *path);
 void fb_capture_serial(const char *label);
 uint64_t fb_capture_count(void);
 
-#endif /* QIRA_FB_H */
+#endif /* QITO_FB_H */
