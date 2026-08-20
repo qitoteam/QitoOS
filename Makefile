@@ -181,7 +181,21 @@ $(ISO): $(BOOT_BIN) $(KERNEL_BIN) $(RAMDISK) $(CMDLINE_STAMP) tools/mkiso.py too
 		--cmdline "$(CMDLINE)"
 	@cp $@ $(ISO_LEGACY)
 
+# iso builds both new and legacy names (qito and qira for CI compat)
 iso: $(ISO) $(ISO_LEGACY) $(KERNEL_ELF_LEGACY) $(KERNEL_BIN_LEGACY) $(RAMDISK_LEGACY)
+
+# Legacy aliases for old CI – make old qira names buildable as copies of qito
+$(ISO_LEGACY): $(ISO)
+	@cp $< $@
+
+$(KERNEL_ELF_LEGACY): $(KERNEL_ELF)
+	@cp $< $@
+
+$(KERNEL_BIN_LEGACY): $(KERNEL_BIN)
+	@cp $< $@
+
+$(RAMDISK_LEGACY): $(RAMDISK)
+	@cp $< $@
 
 # --- running ---------------------------------------------------------------
 QEMU      ?= qemu-system-x86_64
@@ -217,6 +231,9 @@ $(TEST_ISO): $(BOOT_BIN) $(KERNEL_BIN) $(RAMDISK) tools/mkiso.py tools/isofs.py
 		--ramdisk $(RAMDISK) --output $@ --version $(VERSION) \
 		--cmdline "$(TEST_CMDLINE)"
 	@cp $@ $(TEST_ISO_LEGACY)
+
+$(TEST_ISO_LEGACY): $(TEST_ISO)
+	@cp $< $@
 
 test-boot: $(TEST_ISO)
 	@$(PYTHON) tests/run_boot_tests.py --iso $(TEST_ISO) \
