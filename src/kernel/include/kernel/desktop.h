@@ -1,5 +1,5 @@
 /*
- * Qira OS - desktop environment and window manager
+ * QitoOS - desktop environment and window manager
  *
  * The desktop owns the framebuffer once the system has booted. It composites
  * a wallpaper, a set of stacked windows, a panel, menus and notifications, and
@@ -9,8 +9,8 @@
  * processes; each one draws into its window's client area and receives the
  * input events delivered to it.
  */
-#ifndef QIRA_DESKTOP_H
-#define QIRA_DESKTOP_H
+#ifndef QITO_DESKTOP_H
+#define QITO_DESKTOP_H
 
 #include <kernel/types.h>
 #include <kernel/fb.h>
@@ -162,4 +162,4 @@ void app_paint_register(void);
 void app_network_register(void);
 void app_notes_register(void);
 
-#endif /* QIRA_DESKTOP_H */
+#endif /* QITO_DESKTOP_H */

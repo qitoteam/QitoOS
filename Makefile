@@ -1,4 +1,4 @@
-# Qira OS - top level build
+# QitoOS - top level build
 #
 #   make            build the kernel, ramdisk and bootable ISO
 #   make iso        the same, explicitly
@@ -11,8 +11,8 @@
 # not require a cross compiler, because the kernel is compiled freestanding
 # and linked with an explicit link script.
 
-VERSION      := 0.3.0
-CODENAME     := Aurora
+VERSION      := 0.4a
+CODENAME     := Alpha
 BUILD_DATE   := $(shell date -u '+%Y-%m-%d %H:%M:%S UTC')
 BUILD_ID     := $(shell git rev-parse --short HEAD 2>/dev/null || echo nogit)
 
@@ -36,9 +36,9 @@ KCFLAGS := -std=gnu11 -ffreestanding -fno-builtin -nostdlib -nostdinc \
            -Wall -Wextra -Wno-unused-parameter -Wno-address-of-packed-member \
            -O2 -g \
            -I$(SRC)/kernel/include -I$(SRC) \
-           -DQIRA_KERNEL=1 \
-           -DQIRA_BUILD_DATE='"$(BUILD_DATE)"' \
-           -DQIRA_BUILD_ID='"$(BUILD_ID)"'
+           -DQITO_KERNEL=1 \
+           -DQITO_BUILD_DATE='"$(BUILD_DATE)"' \
+           -DQITO_BUILD_ID='"$(BUILD_ID)"'
 
 KASFLAGS := -m64 -nostdlib -ffreestanding -I$(SRC)/kernel/include
 
@@ -55,7 +55,7 @@ BOOT_OBJS := $(patsubst $(SRC)/%.S,$(BUILD)/%.o,$(BOOT_SRCS))
 GEN_FONT := $(SRC)/kernel/gfx/font_data.c
 
 # The shells, desktop and applications are compiled into the kernel image:
-# Qira runs them as kernel tasks rather than as separate ELF executables.
+# Qito runs them as kernel tasks rather than as separate ELF executables.
 KERNEL_C_SRCS := $(shell find $(SRC)/kernel $(SRC)/lib $(SRC)/user \
                           -name '*.c' 2>/dev/null | sort)
 KERNEL_C_SRCS := $(sort $(KERNEL_C_SRCS) $(GEN_FONT))
@@ -69,10 +69,10 @@ KERNEL_LD := $(SRC)/kernel/arch/x86_64/kernel.ld
 
 # --- outputs ---------------------------------------------------------------
 BOOT_BIN   := $(BUILD)/boot.bin
-KERNEL_ELF := $(BUILD)/qira-kernel.elf
-KERNEL_BIN := $(BUILD)/qira-kernel.bin
-RAMDISK    := $(BUILD)/qirafs.img
-ISO        := $(BUILD)/qira-os.iso
+KERNEL_ELF := $(BUILD)/qito-kernel.elf
+KERNEL_BIN := $(BUILD)/qito-kernel.bin
+RAMDISK    := $(BUILD)/qitofs.img
+ISO        := $(BUILD)/qito-os.iso
 
 .PHONY: all iso kernel bootloader ramdisk clean run run-bochs test screenshots \
         test-unit test-boot check-tools info dirs release
@@ -80,7 +80,7 @@ ISO        := $(BUILD)/qira-os.iso
 all: iso
 
 info:
-	@echo "Qira OS $(VERSION) ($(CODENAME))"
+	@echo "QitoOS $(VERSION) ($(CODENAME))"
 	@echo "  CC        = $(CC)"
 	@echo "  LD        = $(LD)"
 	@echo "  build id  = $(BUILD_ID)"
@@ -147,16 +147,16 @@ $(KERNEL_BIN): $(KERNEL_ELF)
 kernel: $(KERNEL_BIN)
 
 # --- ramdisk ---------------------------------------------------------------
-$(RAMDISK): $(shell find rootfs -type f 2>/dev/null) tools/mkqirafs.py
+$(RAMDISK): $(shell find rootfs -type f 2>/dev/null) tools/mkqitofs.py
 	@echo "  FS    $@"
 	@mkdir -p $(BUILD)
-	@$(PYTHON) tools/mkqirafs.py --root rootfs --output $@ --version $(VERSION)
+	@$(PYTHON) tools/mkqitofs.py --root rootfs --output $@ --version $(VERSION)
 
 ramdisk: $(RAMDISK)
 
 # --- ISO -------------------------------------------------------------------
 # Extra kernel command line options, e.g. `make iso CMDLINE_EXTRA=capture=3000`
-CMDLINE ?= root=qirafs console=fb $(CMDLINE_EXTRA)
+CMDLINE ?= root=qitofs console=fb $(CMDLINE_EXTRA)
 
 # The command line is baked into the image, so a change to it has to force the
 # ISO to be rebuilt. Record it in a stamp file that the ISO depends on.
@@ -196,9 +196,9 @@ test-unit:
 # The boot tests need an image that exercises itself without a keyboard: it
 # runs the in-kernel self-test and captures a frame, both driven by the
 # kernel command line.
-TEST_ISO      := $(BUILD)/qira-os-test.iso
-TEST_CMDLINE  := root=qirafs console=fb echo=serial \
-                 autorun=qcsh;selftest;diag;sysinfo;ush;ls_-l_/etc;calc_(7+3)*4;fonts;qac_list;copy_hi;paste \
+TEST_ISO      := $(BUILD)/qito-os-test.iso
+TEST_CMDLINE  := root=qitofs console=fb echo=serial \
+                 autorun=qcsh;selftest;diag;sysinfo;ush;ls_-l_/etc;calc_(7+3)*4;fonts;qti_list;copy_hi;paste;qtx_exports;qdl_list;qtpkg_list \
                  capture=9000
 
 $(TEST_ISO): $(BOOT_BIN) $(KERNEL_BIN) $(RAMDISK) tools/mkiso.py tools/isofs.py
@@ -223,8 +223,8 @@ clean:
 
 release: iso
 	@mkdir -p $(BUILD)/release
-	@cp $(ISO) $(BUILD)/release/qira-os-$(VERSION).iso
-	@cd $(BUILD)/release && sha256sum qira-os-$(VERSION).iso > qira-os-$(VERSION).iso.sha256
+	@cp $(ISO) $(BUILD)/release/qito-os-$(VERSION).iso
+	@cd $(BUILD)/release && sha256sum qito-os-$(VERSION).iso > qito-os-$(VERSION).iso.sha256
 	@echo "release artefacts in $(BUILD)/release"
 
 -include $(KERNEL_OBJS:.o=.d)

@@ -1,5 +1,5 @@
 /*
- * Qira OS - NE2000 (RTL8029 / DP8390) network driver
+ * QitoOS - NE2000 (RTL8029 / DP8390) network driver
  *
  * The NE2000 is the simplest widely-emulated NIC: programmed I/O, no DMA
  * descriptors, and supported by QEMU, Bochs and VirtualBox. That makes it the

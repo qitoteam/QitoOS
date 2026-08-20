@@ -12,7 +12,7 @@ addresses slightly, so the generated file pads itself to a stable size and the
 kernel is linked twice.
 
 Usage:
-    gensyms.py --input build/qira-kernel.elf --output build/ksyms.c
+    gensyms.py --input build/qito-kernel.elf --output build/ksyms.c
 """
 
 from __future__ import annotations

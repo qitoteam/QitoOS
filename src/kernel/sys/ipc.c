@@ -1,5 +1,5 @@
 /*
- * Qira OS - inter-process communication
+ * QitoOS - inter-process communication
  *
  * Named message ports with bounded queues, and byte-stream pipes. Both are
  * safe to use from interrupt context for the non-blocking operations.

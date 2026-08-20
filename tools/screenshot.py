@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-screenshot.py - capture the Qira OS framebuffer from a running emulator.
+screenshot.py - capture the QitoOS framebuffer from a running emulator.
 
 Bochs' ``nogui`` display writes nothing to disk, so instead of scraping the
 emulator we ask the kernel for a copy of its framebuffer: the QCSH
@@ -75,7 +75,7 @@ def convert(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Convert a Qira OS framebuffer dump to PNG"
+        description="Convert a QitoOS framebuffer dump to PNG"
     )
     parser.add_argument("--input", required=True, help="raw 32bpp framebuffer dump")
     parser.add_argument("--output", required=True, help="PNG file to write")

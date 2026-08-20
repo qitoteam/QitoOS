@@ -1,11 +1,11 @@
 /*
- * Qira OS - input subsystem
+ * QitoOS - input subsystem
  *
  * The PS/2 keyboard and mouse drivers translate hardware scancodes into a
  * unified event queue that the desktop and the console both read from.
  */
-#ifndef QIRA_INPUT_H
-#define QIRA_INPUT_H
+#ifndef QITO_INPUT_H
+#define QITO_INPUT_H
 
 #include <kernel/types.h>
 
@@ -92,4 +92,4 @@ uint64_t input_event_count(void);
 uint64_t keyboard_key_count(void);
 uint64_t mouse_packet_count(void);
 
-#endif /* QIRA_INPUT_H */
+#endif /* QITO_INPUT_H */

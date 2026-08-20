@@ -1,5 +1,5 @@
 /*
- * Qira OS - 8259A Programmable Interrupt Controller
+ * QitoOS - 8259A Programmable Interrupt Controller
  *
  * The two cascaded PICs are remapped away from vectors 0-15 (which collide
  * with the CPU exceptions) to vectors 32-47.

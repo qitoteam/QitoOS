@@ -1,5 +1,5 @@
 /*
- * Qira OS - File Manager
+ * QitoOS - File Manager
  *
  * Browses the virtual filesystem: navigate directories, see sizes and
  * permissions, open text files in the editor and delete entries.

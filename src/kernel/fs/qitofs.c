@@ -1,7 +1,7 @@
 /*
- * Qira OS - QiraFS ramdisk loader
+ * QitoOS - QitoFS ramdisk loader
  *
- * Unpacks the boot ramdisk image (produced by tools/mkqirafs.py) into the VFS.
+ * Unpacks the boot ramdisk image (produced by tools/mkqitofs.py) into the VFS.
  * The format is a header, a flat table of entries, and a data region; see the
  * tool for the authoritative layout.
  */
@@ -12,13 +12,13 @@
 #include <kernel/string.h>
 #include <kernel/syscall.h>
 
-#define QIRAFS_MAGIC   "QIRAFS01"
-#define QIRAFS_VERSION 1
+#define QITOFS_MAGIC   "QITOFS01"
+#define QITOFS_VERSION 1
 
-#define QIRAFS_TYPE_FILE 1
-#define QIRAFS_TYPE_DIR  2
+#define QITOFS_TYPE_FILE 1
+#define QITOFS_TYPE_DIR  2
 
-struct qirafs_header {
+struct qitofs_header {
     char     magic[8];
     uint32_t version;
     uint32_t entry_count;
@@ -29,7 +29,7 @@ struct qirafs_header {
     char     label[32];
 } PACKED;
 
-struct qirafs_entry {
+struct qitofs_entry {
     char     path[192];
     uint32_t type;
     uint32_t permissions;
@@ -42,38 +42,38 @@ struct qirafs_entry {
 
 int fs_mount_ramdisk(const void *image, size_t size)
 {
-    if (!image || size < sizeof(struct qirafs_header)) {
-        KLOG_WARN("qirafs", "no ramdisk image supplied");
+    if (!image || size < sizeof(struct qitofs_header)) {
+        KLOG_WARN("qitofs", "no ramdisk image supplied");
         return -QE_INVAL;
     }
 
-    const struct qirafs_header *header = (const struct qirafs_header *)image;
+    const struct qitofs_header *header = (const struct qitofs_header *)image;
 
-    if (memcmp(header->magic, QIRAFS_MAGIC, 8) != 0) {
-        KLOG_ERR("qirafs", "bad magic, not a QiraFS image");
+    if (memcmp(header->magic, QITOFS_MAGIC, 8) != 0) {
+        KLOG_ERR("qitofs", "bad magic, not a QitoFS image");
         return -QE_INVAL;
     }
-    if (header->version != QIRAFS_VERSION) {
-        KLOG_ERR("qirafs", "unsupported image version %u", header->version);
+    if (header->version != QITOFS_VERSION) {
+        KLOG_ERR("qitofs", "unsupported image version %u", header->version);
         return -QE_INVAL;
     }
     if (header->total_size > size) {
-        KLOG_ERR("qirafs", "image claims %llu bytes but only %llu were loaded",
+        KLOG_ERR("qitofs", "image claims %llu bytes but only %llu were loaded",
                  (unsigned long long)header->total_size,
                  (unsigned long long)size);
         return -QE_INVAL;
     }
 
-    const struct qirafs_entry *entries =
-        (const struct qirafs_entry *)((const uint8_t *)image +
-                                      sizeof(struct qirafs_header));
+    const struct qitofs_entry *entries =
+        (const struct qitofs_entry *)((const uint8_t *)image +
+                                      sizeof(struct qitofs_header));
     const uint8_t *data = (const uint8_t *)image + header->data_offset;
 
     /* Verify the payload checksum before trusting any of it. */
     uint32_t checksum = 0;
     for (uint32_t i = 0; i < header->entry_count; i++) {
-        const struct qirafs_entry *entry = &entries[i];
-        if (entry->type != QIRAFS_TYPE_FILE) {
+        const struct qitofs_entry *entry = &entries[i];
+        if (entry->type != QITOFS_TYPE_FILE) {
             continue;
         }
         for (uint64_t b = 0; b < entry->size; b++) {
@@ -81,7 +81,7 @@ int fs_mount_ramdisk(const void *image, size_t size)
         }
     }
     if (checksum != header->checksum) {
-        KLOG_ERR("qirafs", "checksum mismatch (computed %08x, expected %08x)",
+        KLOG_ERR("qitofs", "checksum mismatch (computed %08x, expected %08x)",
                  checksum, header->checksum);
         return -QE_IO;
     }
@@ -91,12 +91,12 @@ int fs_mount_ramdisk(const void *image, size_t size)
     uint64_t bytes         = 0;
 
     for (uint32_t i = 0; i < header->entry_count; i++) {
-        const struct qirafs_entry *entry = &entries[i];
+        const struct qitofs_entry *entry = &entries[i];
 
         char path[FS_PATH_MAX];
         strlcpy(path, entry->path, sizeof(path));
 
-        if (entry->type == QIRAFS_TYPE_DIR) {
+        if (entry->type == QITOFS_TYPE_DIR) {
             if (!fs_lookup(path)) {
                 if (fs_mkdir(path, entry->permissions) == 0) {
                     created_dirs++;
@@ -106,7 +106,7 @@ int fs_mount_ramdisk(const void *image, size_t size)
         }
 
         if (entry->offset + entry->size > header->total_size - header->data_offset) {
-            KLOG_WARN("qirafs", "entry '%s' extends past the image, skipped", path);
+            KLOG_WARN("qitofs", "entry '%s' extends past the image, skipped", path);
             continue;
         }
 
@@ -126,14 +126,14 @@ int fs_mount_ramdisk(const void *image, size_t size)
             node = fs_create(path, FS_FILE, entry->permissions);
         }
         if (!node) {
-            KLOG_WARN("qirafs", "could not create '%s'", path);
+            KLOG_WARN("qitofs", "could not create '%s'", path);
             continue;
         }
 
         if (entry->size) {
             node->data = kmalloc((size_t)entry->size);
             if (!node->data) {
-                KLOG_ERR("qirafs", "out of memory unpacking '%s'", path);
+                KLOG_ERR("qitofs", "out of memory unpacking '%s'", path);
                 continue;
             }
             memcpy(node->data, data + entry->offset, (size_t)entry->size);
@@ -153,7 +153,7 @@ int fs_mount_ramdisk(const void *image, size_t size)
     memcpy(label, header->label, 32);
     label[32] = '\0';
 
-    KLOG_INFO("qirafs", "mounted '%s': %u files, %u directories, %llu bytes",
+    KLOG_INFO("qitofs", "mounted '%s': %u files, %u directories, %llu bytes",
               label, created_files, created_dirs, (unsigned long long)bytes);
     return 0;
 }

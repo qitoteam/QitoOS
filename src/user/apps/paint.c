@@ -1,5 +1,5 @@
 /*
- * Qira OS - Paint
+ * QitoOS - Paint
  *
  * A bitmap editor that works at icon scale and saves in the system's own QAC
  * format. Drawing on a 32x32 grid with a palette is exactly the workflow the
@@ -170,8 +170,8 @@ static int save_qac(struct paint_state *state)
      * Encode with run-length, which is what the kernel decoder reads and is a
      * good fit for flat-shaded icon artwork.
      */
-    #define QAC_HEADER_SIZE 32
-    #define QAC_ENTRY_SIZE  16
+    #define QTI_HEADER_SIZE 32
+    #define QTI_ENTRY_SIZE  16
 
     static uint8_t file[16384];
     size_t position = 0;
@@ -180,8 +180,8 @@ static int save_qac(struct paint_state *state)
     int frame_count = 3;
 
     /* Reserve the header and entry table. */
-    size_t entries_at = QAC_HEADER_SIZE;
-    position = QAC_HEADER_SIZE + (size_t)frame_count * QAC_ENTRY_SIZE;
+    size_t entries_at = QTI_HEADER_SIZE;
+    position = QTI_HEADER_SIZE + (size_t)frame_count * QTI_ENTRY_SIZE;
     size_t payload_at = position;
 
     struct { uint32_t offset, size; } recorded[3];
@@ -230,12 +230,12 @@ static int save_qac(struct paint_state *state)
         recorded[f].size = (uint32_t)(position - payload_at - recorded[f].offset);
 
         /* The entry: width, height, encoding=RLE, no palette. */
-        size_t at = entries_at + (size_t)f * QAC_ENTRY_SIZE;
+        size_t at = entries_at + (size_t)f * QTI_ENTRY_SIZE;
         file[at + 0] = (uint8_t)(size & 0xFF);
         file[at + 1] = (uint8_t)(size >> 8);
         file[at + 2] = (uint8_t)(size & 0xFF);
         file[at + 3] = (uint8_t)(size >> 8);
-        file[at + 4] = 1;   /* QAC_RLE */
+        file[at + 4] = 1;   /* QTI_RLE */
         file[at + 5] = 0;
         file[at + 6] = 0;
         file[at + 7] = 0;
@@ -250,7 +250,7 @@ static int save_qac(struct paint_state *state)
         checksum += file[i];
     }
 
-    memcpy(file + 0, "QACI", 4);
+    memcpy(file + 0, "QTI1", 4);
     uint16_t version = 1, count = (uint16_t)frame_count;
     memcpy(file + 4, &version, 2);
     memcpy(file + 6, &count, 2);
@@ -276,8 +276,8 @@ static void paint_on_open(struct window *win)
     state->tool         = TOOL_PENCIL;
     state->scale        = 12;
     state->show_grid    = true;
-    strlcpy(state->path, "/home/user/icon.qac", sizeof(state->path));
-    strlcpy(state->status, "Ctrl+S saves as a .qac icon",
+    strlcpy(state->path, "/home/user/icon.qti", sizeof(state->path));
+    strlcpy(state->status, "Ctrl+S saves as a .qti icon",
             sizeof(state->status));
 
     window_set_title(win, "Paint");

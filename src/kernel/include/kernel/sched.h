@@ -1,8 +1,8 @@
 /*
- * Qira OS - tasks and scheduling
+ * QitoOS - tasks and scheduling
  */
-#ifndef QIRA_SCHED_H
-#define QIRA_SCHED_H
+#ifndef QITO_SCHED_H
+#define QITO_SCHED_H
 
 #include <kernel/types.h>
 #include <kernel/cpu.h>
@@ -77,6 +77,10 @@ void sched_start(void) NORETURN;
 int  sched_create_kernel_task(const char *name, void (*entry)(void *), void *arg,
                               task_priority_t priority);
 
+int  sched_create_user_task(const char *name, uint64_t entry_va, struct address_space *space,
+                            uint64_t stack_top, int argc, uint64_t argv_va,
+                            task_priority_t priority);
+
 struct task *sched_current(void);
 int  sched_current_pid(void);
 struct task *sched_find(int pid);
@@ -101,4 +105,4 @@ const char *sched_priority_name(task_priority_t priority);
 uint64_t sched_context_switches(void);
 uint64_t sched_idle_ticks(void);
 
-#endif /* QIRA_SCHED_H */
+#endif /* QITO_SCHED_H */

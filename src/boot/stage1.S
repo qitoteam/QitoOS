@@ -1,5 +1,5 @@
 /*
- * Qira OS - Stage 1 boot sector (El Torito, no-emulation CD boot)
+ * QitoOS - Stage 1 boot sector (El Torito, no-emulation CD boot)
  *
  * The BIOS loads this image at 0000:7C00 with DL = the emulated drive number
  * and transfers control to offset 0. Because the El Torito entry declares a
@@ -29,7 +29,7 @@ _start:
     nop
 
     /* 0x03-0x07: identification, also keeps the jump target aligned. */
-    .ascii  "QIRA1"
+    .ascii  "QITO1"
 
     /*
      * 0x08-0x3F: boot information table.
@@ -188,4 +188,4 @@ boot_drive:
     .byte   0
 
 msg_stage1:
-    .asciz  "Qira OS: stage1\r\n"
+    .asciz  "QitoOS: stage1\r\n"

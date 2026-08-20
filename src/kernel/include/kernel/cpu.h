@@ -1,8 +1,8 @@
 /*
- * Qira OS - CPU state, descriptor tables and interrupt frames
+ * QitoOS - CPU state, descriptor tables and interrupt frames
  */
-#ifndef QIRA_CPU_H
-#define QIRA_CPU_H
+#ifndef QITO_CPU_H
+#define QITO_CPU_H
 
 #include <kernel/types.h>
 
@@ -82,4 +82,4 @@ const struct cpu_info *cpu_get_info(void);
 /* Dump register state; used by the fault handlers and the debugger. */
 void cpu_dump_frame(const struct interrupt_frame *frame);
 
-#endif /* QIRA_CPU_H */
+#endif /* QITO_CPU_H */

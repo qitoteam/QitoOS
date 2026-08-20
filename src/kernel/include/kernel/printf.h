@@ -1,8 +1,8 @@
 /*
- * Qira OS - formatted output
+ * QitoOS - formatted output
  */
-#ifndef QIRA_PRINTF_H
-#define QIRA_PRINTF_H
+#ifndef QITO_PRINTF_H
+#define QITO_PRINTF_H
 
 #include <kernel/types.h>
 
@@ -13,4 +13,4 @@ int snprintf(char *buf, size_t size, const char *fmt, ...) PRINTF_FMT(3, 4);
 typedef void (*putc_fn)(void *ctx, char c);
 int vcbprintf(putc_fn emit, void *ctx, const char *fmt, va_list ap);
 
-#endif /* QIRA_PRINTF_H */
+#endif /* QITO_PRINTF_H */

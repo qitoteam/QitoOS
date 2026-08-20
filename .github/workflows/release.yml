@@ -69,13 +69,13 @@ jobs:
           make iso
 
       - name: Validate the ISO
-        run: python3 scripts/validate-iso.py --iso build/qira-os.iso --verbose
+        run: python3 scripts/validate-iso.py --iso build/qito-os.iso --verbose
 
       - name: Verify the release image boots
         run: |
-          make build/qira-os-test.iso
+          make build/qito-os-test.iso
           python3 tests/run_boot_tests.py \
-            --iso build/qira-os-test.iso \
+            --iso build/qito-os-test.iso \
             --emulator qemu \
             --timeout 90 \
             --save-frames build/frames \
@@ -87,21 +87,21 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           mkdir -p release
 
-          cp build/qira-os.iso "release/qira-os-${VERSION}-x86_64.iso"
-          cp build/qira-kernel.elf "release/qira-kernel-${VERSION}.elf"
+          cp build/qito-os.iso "release/qito-os-${VERSION}-x86_64.iso"
+          cp build/qito-kernel.elf "release/qito-kernel-${VERSION}.elf"
 
           cd release
           sha256sum ./*.iso ./*.elf > SHA256SUMS
           cd ..
 
-          echo "iso_size=$(du -h build/qira-os.iso | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "iso_size=$(du -h build/qito-os.iso | cut -f1)" >> "$GITHUB_OUTPUT"
           ls -la release/
 
       - name: Write the release notes
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           cat > release/NOTES.md <<NOTES
-          ## Qira OS ${VERSION}
+          ## QitoOS ${VERSION}
 
           A bootable x86_64 operating system built from scratch: custom
           bootloader, kernel, filesystem, desktop environment and two shells.
@@ -110,14 +110,14 @@ jobs:
 
           | File | Description |
           | --- | --- |
-          | \`qira-os-${VERSION}-x86_64.iso\` | Bootable ISO image (${{ steps.artefacts.outputs.iso_size }}) |
-          | \`qira-kernel-${VERSION}.elf\` | Kernel with symbols, for debugging |
+          | \`qito-os-${VERSION}-x86_64.iso\` | Bootable ISO image (${{ steps.artefacts.outputs.iso_size }}) |
+          | \`qito-kernel-${VERSION}.elf\` | Kernel with symbols, for debugging |
           | \`SHA256SUMS\` | Checksums for the files above |
 
           ### Running it
 
           \`\`\`sh
-          qemu-system-x86_64 -cdrom qira-os-${VERSION}-x86_64.iso -m 512
+          qemu-system-x86_64 -cdrom qito-os-${VERSION}-x86_64.iso -m 512
           \`\`\`
 
           The image also boots on VirtualBox, VMware and real BIOS hardware
@@ -129,7 +129,7 @@ jobs:
           The boot tests check every startup milestone, run the in-kernel
           self-test suite, and inspect a capture of the composited desktop.
 
-          See the [changelog](https://github.com/Seigh-sword/QiraOS/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
+          See the [changelog](https://github.com/qitoteam/QitoOS/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
           for what changed in this release.
           NOTES
           cat release/NOTES.md
@@ -137,7 +137,7 @@ jobs:
       - name: Upload the artefacts to the workflow
         uses: actions/upload-artifact@v4
         with:
-          name: qira-os-release-${{ steps.version.outputs.version }}
+          name: qito-os-release-${{ steps.version.outputs.version }}
           path: release/
           retention-days: 90
 
@@ -145,11 +145,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Qira OS ${{ steps.version.outputs.version }}
+          name: QitoOS ${{ steps.version.outputs.version }}
           body_path: release/NOTES.md
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
           files: |
-            release/qira-os-${{ steps.version.outputs.version }}-x86_64.iso
-            release/qira-kernel-${{ steps.version.outputs.version }}.elf
+            release/qito-os-${{ steps.version.outputs.version }}-x86_64.iso
+            release/qito-kernel-${{ steps.version.outputs.version }}.elf
             release/SHA256SUMS

@@ -1,12 +1,12 @@
 /*
- * Qira OS - spinlocks
+ * QitoOS - spinlocks
  *
- * Qira currently runs the kernel on a single CPU, but locks are still taken so
+ * Qito currently runs the kernel on a single CPU, but locks are still taken so
  * that interrupt handlers cannot observe half-updated state, and so the code
  * is ready for SMP.
  */
-#ifndef QIRA_SPINLOCK_H
-#define QIRA_SPINLOCK_H
+#ifndef QITO_SPINLOCK_H
+#define QITO_SPINLOCK_H
 
 #include <kernel/types.h>
 #include <kernel/io.h>
@@ -54,4 +54,4 @@ INLINE bool_t spinlock_try_acquire(spinlock_t *lock)
     return __atomic_exchange_n(&lock->locked, 1, __ATOMIC_ACQUIRE) == 0;
 }
 
-#endif /* QIRA_SPINLOCK_H */
+#endif /* QITO_SPINLOCK_H */

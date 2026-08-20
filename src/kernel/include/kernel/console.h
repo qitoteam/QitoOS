@@ -1,12 +1,12 @@
 /*
- * Qira OS - system console
+ * QitoOS - system console
  *
  * The console multiplexes text output between the serial port and an
  * on-screen text surface, and provides a line-buffered keyboard input queue
  * for the shells.
  */
-#ifndef QIRA_CONSOLE_H
-#define QIRA_CONSOLE_H
+#ifndef QITO_CONSOLE_H
+#define QITO_CONSOLE_H
 
 #include <kernel/types.h>
 #include <kernel/fb.h>
@@ -50,4 +50,4 @@ int console_rows(void);
 typedef void (*console_hook_fn)(const char *text, size_t len);
 void console_set_hook(console_hook_fn hook);
 
-#endif /* QIRA_CONSOLE_H */
+#endif /* QITO_CONSOLE_H */

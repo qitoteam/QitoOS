@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# setup-dev.sh - install everything needed to build and run Qira OS.
+# setup-dev.sh - install everything needed to build and run QitoOS.
 #
-# Qira OS deliberately keeps its dependencies small: a hosted GCC/binutils
+# QitoOS deliberately keeps its dependencies small: a hosted GCC/binutils
 # toolchain and Python 3 are enough to build the ISO, because the project
 # ships its own ISO 9660 writer and filesystem packer rather than relying on
 # xorriso, grub-mkrescue or mtools.
@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-echo "Qira OS development environment setup"
+echo "QitoOS development environment setup"
 echo
 
 detect_platform() {

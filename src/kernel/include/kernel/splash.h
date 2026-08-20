@@ -1,8 +1,8 @@
 /*
- * Qira OS - boot splash
+ * QitoOS - boot splash
  */
-#ifndef QIRA_SPLASH_H
-#define QIRA_SPLASH_H
+#ifndef QITO_SPLASH_H
+#define QITO_SPLASH_H
 
 #include <kernel/types.h>
 
@@ -18,4 +18,4 @@ uint64_t splash_elapsed_ms(void);
 /* Replace the splash with a failure screen. */
 void splash_fail(const char *stage, const char *detail);
 
-#endif /* QIRA_SPLASH_H */
+#endif /* QITO_SPLASH_H */

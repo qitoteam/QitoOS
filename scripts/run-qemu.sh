@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# run-qemu.sh - boot Qira OS in QEMU with sensible defaults.
+# run-qemu.sh - boot QitoOS in QEMU with sensible defaults.
 #
 # Usage:
 #   scripts/run-qemu.sh [options]
 #
 # Options:
-#   -i, --iso PATH      image to boot (default: build/qira-os.iso)
+#   -i, --iso PATH      image to boot (default: build/qito-os.iso)
 #   -m, --memory MB     guest memory in MiB (default: 512)
 #   -n, --nographic     run headless with the serial console on the terminal
 #   -d, --debug         wait for a gdb connection on port 1234
@@ -19,7 +19,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-ISO="$ROOT/build/qira-os.iso"
+ISO="$ROOT/build/qito-os.iso"
 MEMORY=512
 NOGRAPHIC=0
 DEBUG=0
@@ -72,7 +72,7 @@ else
 fi
 
 if [[ $NETWORK -eq 1 ]]; then
-    # Qira drives the NE2000; user-mode networking needs no host privileges.
+    # Qito drives the NE2000; user-mode networking needs no host privileges.
     ARGS+=(-netdev user,id=net0 -device ne2k_pci,netdev=net0)
 fi
 
@@ -80,7 +80,7 @@ if [[ $DEBUG -eq 1 ]]; then
     ARGS+=(-s -S)
     echo "Waiting for a debugger on tcp:1234."
     echo "Connect with:"
-    echo "  gdb build/qira-kernel.elf -ex 'target remote :1234'"
+    echo "  gdb build/qito-kernel.elf -ex 'target remote :1234'"
 fi
 
 if [[ $KVM -eq 1 ]] && [[ -w /dev/kvm ]]; then

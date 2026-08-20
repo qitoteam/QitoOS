@@ -1,5 +1,5 @@
 /*
- * Qira OS - device filesystem
+ * QitoOS - device filesystem
  *
  * Exposes the standard character devices under /dev. These are ordinary VFS
  * nodes with an ops table, so `cat /dev/random` and friends work from either

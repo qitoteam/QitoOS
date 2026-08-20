@@ -1,5 +1,5 @@
 /*
- * Qira OS - boot splash and loading screen
+ * QitoOS - boot splash and loading screen
  *
  * Shown from the moment the framebuffer is up until the desktop takes over.
  * Besides looking finished, it is genuinely useful: the stage text is the
@@ -36,7 +36,7 @@ static uint64_t started_ms;
 static void draw_wordmark(int cx, int cy)
 {
     /*
-     * A ring with a tail: the Q of Qira. Drawn from arcs so it scales
+     * A ring with a tail: the Q of Qito. Drawn from arcs so it scales
      * cleanly and costs nothing to store.
      */
     int radius = 34;
@@ -107,13 +107,13 @@ void splash_update(const char *stage, int percent)
     draw_wordmark(centre_x, centre_y - 96);
 
     /* Product name. */
-    const char *title = "Qira OS";
+    const char *title = "QitoOS";
     fb_draw_string_large(centre_x - fb_text_width_large(title) / 2, centre_y - 24,
                          title, SPLASH_TEXT);
 
     char subtitle[80];
-    snprintf(subtitle, sizeof(subtitle), "version %s  \"%s\"", QIRA_VERSION_STRING,
-             QIRA_CODENAME);
+    snprintf(subtitle, sizeof(subtitle), "version %s  \"%s\"", QITO_VERSION_STRING,
+             QITO_CODENAME);
     fb_draw_string(centre_x - fb_text_width(subtitle) / 2, centre_y + 14, subtitle,
                    SPLASH_DIM);
 
@@ -145,7 +145,7 @@ void splash_update(const char *stage, int percent)
                    percent_text, SPLASH_DIM);
 
     /* Footer. */
-    const char *footer = QIRA_MAINTAINER "  -  " QIRA_PROJECT_URL;
+    const char *footer = QITO_MAINTAINER "  -  " QITO_PROJECT_URL;
     fb_draw_string(centre_x - fb_text_width(footer) / 2, height - 34, footer,
                    RGB(86, 96, 124));
 

@@ -1,8 +1,8 @@
 /*
- * Qira OS - port I/O and low level CPU helpers
+ * QitoOS - port I/O and low level CPU helpers
  */
-#ifndef QIRA_IO_H
-#define QIRA_IO_H
+#ifndef QITO_IO_H
+#define QITO_IO_H
 
 #include <kernel/types.h>
 
@@ -217,4 +217,4 @@ INLINE void mmio_write64(volatile void *addr, uint64_t v)
 #define MSR_GS_BASE       0xC0000101u
 #define MSR_KERNEL_GSBASE 0xC0000102u
 
-#endif /* QIRA_IO_H */
+#endif /* QITO_IO_H */

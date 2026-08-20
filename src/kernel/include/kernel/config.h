@@ -1,16 +1,16 @@
 /*
- * Qira OS - system configuration store
+ * QitoOS - system configuration store
  *
- * A small typed key/value database persisted to /etc/qira.conf. Both the
+ * A small typed key/value database persisted to /etc/qito.conf. Both the
  * shells and the desktop read and write settings through this interface so
  * there is a single source of truth for how the system is configured.
  */
-#ifndef QIRA_CONFIG_H
-#define QIRA_CONFIG_H
+#ifndef QITO_CONFIG_H
+#define QITO_CONFIG_H
 
 #include <kernel/types.h>
 
-#define CONFIG_PATH        "/etc/qira.conf"
+#define CONFIG_PATH        "/etc/qito.conf"
 #define CONFIG_KEY_MAX     64
 #define CONFIG_VALUE_MAX   192
 #define CONFIG_MAX_ENTRIES 96
@@ -50,4 +50,4 @@ int  config_count(void);
 const struct config_entry *config_at(int index);
 void config_list(struct shell *sh);
 
-#endif /* QIRA_CONFIG_H */
+#endif /* QITO_CONFIG_H */

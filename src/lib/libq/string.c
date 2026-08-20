@@ -1,5 +1,5 @@
 /*
- * Qira OS - freestanding implementations of the C string/memory routines.
+ * QitoOS - freestanding implementations of the C string/memory routines.
  *
  * These are shared by the kernel and by userspace programs, so they must not
  * depend on any kernel service.

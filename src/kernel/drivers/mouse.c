@@ -1,5 +1,5 @@
 /*
- * Qira OS - PS/2 mouse driver
+ * QitoOS - PS/2 mouse driver
  *
  * Initialises the auxiliary port of the 8042 controller, enables the
  * IntelliMouse scroll-wheel protocol when the device supports it, and turns

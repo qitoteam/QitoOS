@@ -1,12 +1,12 @@
 /*
- * Qira OS - system call dispatch
+ * QitoOS - system call dispatch
  *
  * Userspace enters the kernel through `int 0x80` with the call number in RAX
  * and up to six arguments in RDI, RSI, RDX, R10, R8, R9. The result is
  * returned in RAX; negative values are error codes from <kernel/syscall.h>.
  */
 
-#define QIRA_KERNEL 1
+#define QITO_KERNEL 1
 
 #include <kernel/syscall.h>
 #include <kernel/cpu.h>
@@ -22,7 +22,7 @@
 
 static uint64_t call_counts[SYS_MAX];
 
-const char *qira_strerror(int error)
+const char *qito_strerror(int error)
 {
     if (error < 0) {
         error = -error;
@@ -253,15 +253,15 @@ static int64_t sys_getcwd(char *buf, size_t len)
     return (int64_t)strlen(buf);
 }
 
-static int64_t sys_sysinfo(struct qira_sysinfo *out)
+static int64_t sys_sysinfo(struct qito_sysinfo *out)
 {
     if (!user_pointer_ok(out, sizeof(*out))) {
         return -QE_INVAL;
     }
 
     memset(out, 0, sizeof(*out));
-    strlcpy(out->version, QIRA_VERSION_STRING, sizeof(out->version));
-    strlcpy(out->codename, QIRA_CODENAME, sizeof(out->codename));
+    strlcpy(out->version, QITO_VERSION_STRING, sizeof(out->version));
+    strlcpy(out->codename, QITO_CODENAME, sizeof(out->codename));
     strlcpy(out->arch, "x86_64", sizeof(out->arch));
 
     const struct cpu_info *cpu = cpu_get_info();
@@ -427,7 +427,7 @@ void syscall_dispatch(struct interrupt_frame *frame)
         break;
 
     case SYS_SYSINFO:
-        result = sys_sysinfo((struct qira_sysinfo *)a0);
+        result = sys_sysinfo((struct qito_sysinfo *)a0);
         break;
 
     case SYS_DMESG:

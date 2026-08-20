@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-validate-iso.py - verify that a built Qira OS image is actually bootable.
+validate-iso.py - verify that a built QitoOS image is actually bootable.
 
 Checks the structural invariants that decide whether a PC firmware will boot
 the disc, so a broken image is caught in CI instead of in a virtual machine:
@@ -19,8 +19,8 @@ import struct
 import sys
 
 SECTOR = 2048
-QIRAFS_MAGIC = b"QIRAFS01"
-PAYLOAD_SIGNATURE = b"QIRAPLD1"
+QITOFS_MAGIC = b"QITOFS01"
+PAYLOAD_SIGNATURE = b"QITOPLD1"
 
 
 class Validator:
@@ -187,8 +187,8 @@ def validate(path: str, verbose: bool) -> int:
                     ramdisk_lba + ramdisk_sectors <= sectors)
 
             ramdisk_head = image[ramdisk_lba * SECTOR : ramdisk_lba * SECTOR + 8]
-            v.check("ramdisk carries the QiraFS magic",
-                    ramdisk_head == QIRAFS_MAGIC, repr(ramdisk_head))
+            v.check("ramdisk carries the QitoFS magic",
+                    ramdisk_head == QITOFS_MAGIC, repr(ramdisk_head))
 
             recorded = struct.unpack(
                 "<Q", image[ramdisk_lba * SECTOR + 16 : ramdisk_lba * SECTOR + 24]
@@ -199,7 +199,7 @@ def validate(path: str, verbose: bool) -> int:
             v.warn("image has no ramdisk", False)
 
         # The kernel command line must have been patched in.
-        cmdline_marker = boot.find(b"QIRACMDLINE:")
+        cmdline_marker = boot.find(b"QITOCMDLINE:")
         v.check("kernel command line was patched", cmdline_marker < 0,
                 "the placeholder marker is still present")
 
@@ -219,7 +219,7 @@ def validate(path: str, verbose: bool) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate a Qira OS ISO image")
+    parser = argparse.ArgumentParser(description="Validate a QitoOS ISO image")
     parser.add_argument("--iso", required=True)
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()

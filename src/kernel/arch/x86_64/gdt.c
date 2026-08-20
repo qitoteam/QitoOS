@@ -1,5 +1,5 @@
 /*
- * Qira OS - Global Descriptor Table and Task State Segment
+ * QitoOS - Global Descriptor Table and Task State Segment
  *
  * Long mode barely uses segmentation, but a GDT is still required for the
  * privilege-level switch between ring 0 and ring 3, and a TSS is needed so the

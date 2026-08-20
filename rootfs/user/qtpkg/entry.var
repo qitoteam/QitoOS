@@ -1,0 +1,22 @@
+# QitoOS package registry entry.var
+# Auto-generated from packages/ – format: name = [version](url),[version](url);
+# Each URL points to .qtpkg_profile manifest
+
+about = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/about/0.4.0/about.qtpkg_profile);
+browser = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/browser/0.4.0/browser.qtpkg_profile);
+calculator = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/calculator/0.4.0/calculator.qtpkg_profile);
+clock = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/clock/0.4.0/clock.qtpkg_profile);
+drv-ahci = [1.0.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/drivers/ahci/1.0.0/drv-ahci.qtpkg_profile);
+editor = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/editor/0.4.0/editor.qtpkg_profile);
+files = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/files/0.4.0/files.qtpkg_profile);
+fonts-qito-mono = [1.0.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/fonts/qito-mono/1.0.0/fonts-qito-mono.qtpkg_profile);
+fonts-qito-sans = [1.0.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/fonts/qito-sans/1.0.0/fonts-qito-sans.qtpkg_profile);
+hello = [1.0.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/hello/1.0.0/hello.qtpkg_profile);
+libdemo = [1.0.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/libdemo/1.0.0/libdemo.qtpkg_profile);
+notes = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/notes/0.4.0/notes.qtpkg_profile);
+paint = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/paint/0.4.0/paint.qtpkg_profile);
+qasm = [1.0.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/qasm/1.0.0/qasm.qtpkg_profile);
+qcc = [0.1.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/qcc/0.1.0/qcc.qtpkg_profile);
+settings = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/settings/0.4.0/settings.qtpkg_profile);
+sysmon = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/sysmon/0.4.0/sysmon.qtpkg_profile);
+terminal = [0.4.0](https://raw.githubusercontent.com/qitoteam/qtpkg-registry/main/packages/terminal/0.4.0/terminal.qtpkg_profile);

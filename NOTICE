@@ -1,12 +1,12 @@
-Qira OS
+QitoOS
 Copyright 2026 Seigh-sword
 
-This product includes software developed as part of the Qira OS project
-(https://github.com/Seigh-sword/QiraOS).
+This product includes software developed as part of the QitoOS project
+(https://github.com/Seigh-sword/QitoOS).
 
 Licensed under the Apache License, Version 2.0. See the LICENSE file for the
 full terms.
 
-All source code in this repository was written for this project. Qira OS does
+All source code in this repository was written for this project. QitoOS does
 not vendor or link against third-party code; the kernel is freestanding and
 implements its own C runtime, bootloader, filesystem and ISO writer.

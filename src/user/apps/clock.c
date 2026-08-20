@@ -1,5 +1,5 @@
 /*
- * Qira OS - Clock
+ * QitoOS - Clock
  *
  * An analogue clock face with a digital readout, plus a stopwatch. Doubles as
  * a demonstration that the compositor can animate at a steady rate.
@@ -95,7 +95,7 @@ static void clock_draw(struct window *win, int x, int y, int w, int h)
     int area_h = h - 28;
 
     if (state->mode == 0) {
-        struct qira_time now;
+        struct qito_time now;
         time_from_unix(rtc_unix_time(), &now);
 
         int cx     = x + w / 2;

@@ -1,23 +1,20 @@
 /*
- * Qira OS - network, executable and icon commands for UltraShell
- *
- * These live apart from ultrashell.c so the core file stays about the shell
- * rather than growing every time a subsystem gains a command. The table here
- * is appended to UltraShell's at registration.
+ * QitoOS - network, executable, icon, library and package commands
  */
 
 #include <kernel/shell.h>
 #include <kernel/net.h>
 #include <kernel/http.h>
-#include <kernel/git.h>
-#include <kernel/lqx.h>
-#include <kernel/qac.h>
+#include <kernel/qtx.h>
+#include <kernel/qti.h>
+#include <kernel/qdl.h>
 #include <kernel/font.h>
 #include <kernel/fs.h>
 #include <kernel/string.h>
 #include <kernel/printf.h>
 #include <kernel/mm.h>
 #include <kernel/time.h>
+#include <kernel/qtpkg.h>
 
 /* --- networking -------------------------------------------------------- */
 
@@ -25,471 +22,246 @@ static int cmd_fetch(struct shell *sh, int argc, char **argv)
 {
     if (argc < 2) {
         shell_error(sh, "usage: fetch <url> [-o file] [-H]");
-        shell_printf(sh, "  -o  write the body to a file instead of the screen\n");
-        shell_printf(sh, "  -H  show the response headers\n");
+        shell_printf(sh, "  -o  write body to file\n");
+        shell_printf(sh, "  -H  show headers\n");
         return 1;
     }
-
-    const char *url         = argv[1];
-    const char *destination = NULL;
-    bool_t      show_headers = false;
-
-    for (int i = 2; i < argc; i++) {
-        if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
-            destination = argv[++i];
-        } else if (strcmp(argv[i], "-H") == 0) {
-            show_headers = true;
-        }
+    const char *url = argv[1];
+    const char *dest = NULL;
+    bool_t show_headers = false;
+    for (int i=2;i<argc;i++) {
+        if (strcmp(argv[i],"-o")==0 && i+1<argc) dest=argv[++i];
+        else if (strcmp(argv[i],"-H")==0) show_headers=true;
     }
-
-    struct http_response response;
-    uint64_t start = time_uptime_ms();
-
-    if (http_get(url, &response) != 0) {
-        shell_error(sh, "fetch: %s", response.error);
-        return 1;
-    }
-
-    uint64_t elapsed = time_uptime_ms() - start;
-
-    shell_color(sh, "\033[96m");
-    shell_printf(sh, "%d %s", response.status,
-                 http_status_text(response.status));
+    struct http_response resp;
+    uint64_t start=time_uptime_ms();
+    if (http_get(url,&resp)!=0) { shell_error(sh,"fetch: %s",resp.error); return 1; }
+    uint64_t elapsed=time_uptime_ms()-start;
+    shell_color(sh,"\033[96m");
+    shell_printf(sh,"%d %s",resp.status,http_status_text(resp.status));
     shell_reset_color(sh);
-    shell_printf(sh, "  %llu bytes in %llu ms\n",
-                 (unsigned long long)response.body_length,
-                 (unsigned long long)elapsed);
-
-    if (show_headers) {
-        shell_printf(sh, "\n%s\n\n", response.headers);
-    }
-
-    if (destination) {
+    shell_printf(sh,"  %llu bytes in %llu ms\n",(unsigned long long)resp.body_length,(unsigned long long)elapsed);
+    if (show_headers) shell_printf(sh,"\n%s\n\n",resp.headers);
+    if (dest) {
         char resolved[FS_PATH_MAX];
-        shell_resolve(sh, destination, resolved, sizeof(resolved));
-
-        if (fs_write_file(resolved, response.body, response.body_length) == 0) {
-            shell_printf(sh, "wrote %llu bytes to %s\n",
-                         (unsigned long long)response.body_length, resolved);
-        } else {
-            shell_error(sh, "fetch: cannot write %s", resolved);
-            http_free(&response);
-            return 1;
-        }
+        shell_resolve(sh,dest,resolved,sizeof(resolved));
+        if (fs_write_file(resolved,resp.body,resp.body_length)==0) {
+            shell_printf(sh,"wrote %llu bytes to %s\n",(unsigned long long)resp.body_length,resolved);
+        } else { shell_error(sh,"cannot write %s",resolved); http_free(&resp); return 1; }
     } else {
-        shell_write(sh, response.body, response.body_length);
-        if (response.body_length &&
-            response.body[response.body_length - 1] != '\n') {
-            shell_printf(sh, "\n");
-        }
+        shell_write(sh,resp.body,resp.body_length);
+        if (resp.body_length && resp.body[resp.body_length-1]!='\n') shell_printf(sh,"\n");
     }
-
-    http_free(&response);
+    http_free(&resp);
     return 0;
 }
 
 static int cmd_lookup(struct shell *sh, int argc, char **argv)
 {
-    if (argc < 2) {
-        shell_error(sh, "usage: lookup <hostname>");
-        return 1;
-    }
-
+    if (argc<2){ shell_error(sh,"usage: lookup <hostname>"); return 1; }
     char server[24];
-    net_format_ip(net_dns_server(), server, sizeof(server));
-    shell_printf(sh, "Resolver: %s\n", server);
-
-    uint64_t start = time_uptime_ms();
-    ipv4_addr_t address;
-
-    if (dns_resolve(argv[1], &address, 5000) != 0) {
-        shell_error(sh, "lookup: no answer for %s", argv[1]);
-        return 1;
-    }
-
+    net_format_ip(net_dns_server(),server,sizeof(server));
+    shell_printf(sh,"Resolver: %s\n",server);
+    uint64_t start=time_uptime_ms();
+    ipv4_addr_t addr;
+    if (dns_resolve(argv[1],&addr,5000)!=0){ shell_error(sh,"lookup: no answer for %s",argv[1]); return 1; }
     char text[24];
-    net_format_ip(address, text, sizeof(text));
-    shell_printf(sh, "%s has address %s  (%llu ms)\n", argv[1], text,
-                 (unsigned long long)(time_uptime_ms() - start));
+    net_format_ip(addr,text,sizeof(text));
+    shell_printf(sh,"%s has address %s (%llu ms)\n",argv[1],text,(unsigned long long)(time_uptime_ms()-start));
     return 0;
 }
 
-static int cmd_git(struct shell *sh, int argc, char **argv)
+/* --- QTX --------------------------------------------------------------- */
+
+static int cmd_qtx(struct shell *sh, int argc, char **argv)
 {
-    if (argc < 2) {
-        shell_printf(sh, "usage: git <ls-remote|clone|version> [url]\n\n");
-        shell_printf(sh, "Qira speaks git's smart HTTP protocol. Reference\n");
-        shell_printf(sh, "discovery is complete; clone downloads a packfile\n");
-        shell_printf(sh, "but cannot unpack it yet, because that needs zlib\n");
-        shell_printf(sh, "inflate and delta resolution.\n\n");
-        shell_printf(sh, "There is no TLS, so only http:// remotes work.\n");
-        return 1;
-    }
-
-    if (strcmp(argv[1], "version") == 0) {
-        shell_printf(sh, "qira-git, part of Qira OS\n");
-        shell_printf(sh, "protocol: smart HTTP (git-upload-pack)\n");
-        shell_printf(sh, "supported: ls-remote, fetch-pack\n");
-        shell_printf(sh, "missing:   packfile inflation, working trees, push\n");
+    if (argc<2){ shell_printf(sh,"usage: qtx <info|verify|exports|run|list> [file]\n"); return 1; }
+    if (strcmp(argv[1],"exports")==0){
+        shell_printf(sh,"Kernel services available to QTX programs:\n\n");
+        int count=qtx_export_count();
+        for (int i=0;i<count;i++){
+            shell_printf(sh,"  %-22s",qtx_export_name(i));
+            if ((i%3)==2) shell_printf(sh,"\n");
+        }
+        if (count%3) shell_printf(sh,"\n");
+        shell_printf(sh,"\n%d service(s)\n",count);
         return 0;
     }
-
-    if (strcmp(argv[1], "ls-remote") == 0) {
-        if (argc < 3) {
-            shell_error(sh, "usage: git ls-remote <url>");
-            return 1;
-        }
-
-        static struct git_ref refs[GIT_MAX_REFS];
-        char error[128] = "";
-
-        shell_printf(sh, "Querying %s...\n", argv[2]);
-
-        int count = git_ls_remote(argv[2], refs, GIT_MAX_REFS, error,
-                                  sizeof(error));
-        if (count < 0) {
-            shell_error(sh, "git: %s", error);
-            return 1;
-        }
-
-        for (int i = 0; i < count; i++) {
-            const char *kind;
-            switch (git_ref_kind(refs[i].name)) {
-            case GIT_REF_BRANCH: kind = "branch"; break;
-            case GIT_REF_TAG:    kind = "tag";    break;
-            case GIT_REF_HEAD:   kind = "HEAD";   break;
-            default:             kind = "ref";    break;
-            }
-
-            shell_printf(sh, "%s\t%-8s %s\n", refs[i].hash, kind, refs[i].name);
-        }
-
-        shell_printf(sh, "\n%d reference(s)\n", count);
-        return 0;
-    }
-
-    if (strcmp(argv[1], "clone") == 0) {
-        if (argc < 3) {
-            shell_error(sh, "usage: git clone <url> [destination]");
-            return 1;
-        }
-
-        static struct git_ref refs[GIT_MAX_REFS];
-        char error[128] = "";
-
-        shell_printf(sh, "Cloning %s\n", argv[2]);
-        shell_printf(sh, "Discovering references...\n");
-
-        int count = git_ls_remote(argv[2], refs, GIT_MAX_REFS, error,
-                                  sizeof(error));
-        if (count <= 0) {
-            shell_error(sh, "git: %s", error[0] ? error : "no references found");
-            return 1;
-        }
-
-        /* Prefer HEAD, then the default branch. */
-        const char *want = refs[0].hash;
-        const char *name = refs[0].name;
-        for (int i = 0; i < count; i++) {
-            if (strcmp(refs[i].name, "HEAD") == 0 ||
-                strcmp(refs[i].name, "refs/heads/main") == 0 ||
-                strcmp(refs[i].name, "refs/heads/master") == 0) {
-                want = refs[i].hash;
-                name = refs[i].name;
-                break;
+    if (strcmp(argv[1],"list")==0){
+        shell_printf(sh,"Scanning for .qtx files in /bin and /usr/bin...\n");
+        const char *dirs[]={"/bin","/usr/bin","/user/bin",NULL};
+        for (int d=0;dirs[d];d++){
+            struct fs_node *dir=fs_lookup(dirs[d]);
+            if (!dir) continue;
+            struct fs_dirent de;
+            for (int i=0;fs_readdir(dir,i,&de)==0;i++){
+                size_t len=strlen(de.name);
+                if (len<5||strcmp(de.name+len-4,".qtx")!=0) continue;
+                char path[FS_PATH_MAX];
+                snprintf(path,sizeof(path),"%s/%s",dirs[d],de.name);
+                shell_printf(sh,"  %s\n",path);
             }
         }
-
-        shell_printf(sh, "Fetching %s (%s)...\n", git_ref_short_name(name), want);
-
-        char destination[FS_PATH_MAX];
-        if (argc > 3) {
-            shell_resolve(sh, argv[3], destination, sizeof(destination));
-        } else {
-            shell_resolve(sh, "repository.pack", destination,
-                          sizeof(destination));
-        }
-
-        struct git_fetch_result result;
-        if (git_fetch_pack(argv[2], want, destination, &result, error,
-                           sizeof(error)) != 0) {
-            shell_error(sh, "git: %s", error);
-            return 1;
-        }
-
-        shell_printf(sh, "\nReceived a v%u packfile: %u objects, %llu bytes\n",
-                     result.pack_version, result.object_count,
-                     (unsigned long long)result.pack_size);
-
-        if (result.saved) {
-            shell_printf(sh, "Saved to %s\n", result.path);
-        }
-
-        shell_color(sh, "\033[93m");
-        shell_printf(sh, "\nThe packfile was downloaded but not unpacked.\n");
-        shell_reset_color(sh);
-        shell_printf(sh, "Qira cannot inflate packfiles yet, so no working\n");
-        shell_printf(sh, "tree was created. The pack itself is intact and can\n");
-        shell_printf(sh, "be opened with git on another machine.\n");
         return 0;
     }
-
-    shell_error(sh, "git: unknown subcommand '%s'", argv[1]);
-    return 1;
-}
-
-/* --- executables ------------------------------------------------------- */
-
-static int cmd_lqx(struct shell *sh, int argc, char **argv)
-{
-    if (argc < 2) {
-        shell_printf(sh, "usage: lqx <info|verify|exports|run> [file]\n");
-        return 1;
-    }
-
-    if (strcmp(argv[1], "exports") == 0) {
-        shell_printf(sh, "Kernel services available to LQX programs:\n\n");
-        int count = lqx_export_count();
-        for (int i = 0; i < count; i++) {
-            shell_printf(sh, "  %-22s", lqx_export_name(i));
-            if ((i % 3) == 2) {
-                shell_printf(sh, "\n");
-            }
-        }
-        if (count % 3) {
-            shell_printf(sh, "\n");
-        }
-        shell_printf(sh, "\n%d service(s) exported.\n", count);
-        return 0;
-    }
-
-    if (argc < 3) {
-        shell_error(sh, "usage: lqx %s <file>", argv[1]);
-        return 1;
-    }
-
+    if (argc<3){ shell_error(sh,"usage: qtx %s <file>",argv[1]); return 1; }
     char resolved[FS_PATH_MAX];
-    shell_resolve(sh, argv[2], resolved, sizeof(resolved));
+    shell_resolve(sh,argv[2],resolved,sizeof(resolved));
 
-    if (strcmp(argv[1], "info") == 0) {
-        struct qx_header header;
-        if (lqx_probe(resolved, &header) != 0) {
-            shell_error(sh, "lqx: %s is not an LQX image", argv[2]);
-            return 1;
-        }
-        shell_printf(sh, "%s\n", resolved);
-        lqx_describe(&header, sh);
+    if (strcmp(argv[1],"info")==0){
+        struct qx_header hdr;
+        if (qtx_probe(resolved,&hdr)!=0){ shell_error(sh,"qtx: %s not a QTX image",argv[2]); return 1; }
+        shell_printf(sh,"%s\n",resolved);
+        qtx_describe(&hdr,sh);
         return 0;
     }
-
-    if (strcmp(argv[1], "verify") == 0) {
-        struct fs_stat stat;
-        if (fs_stat(resolved, &stat) != 0) {
-            shell_error(sh, "lqx: %s: no such file", argv[2]);
-            return 1;
-        }
-
-        void *buffer = kmalloc(stat.size);
-        if (!buffer) {
-            shell_error(sh, "lqx: out of memory");
-            return 1;
-        }
-
-        size_t got = 0;
-        fs_read_file(resolved, buffer, stat.size, &got);
-
-        const char *reason = NULL;
-        int result = lqx_validate(buffer, got, &reason);
-        kfree(buffer);
-
-        if (result == 0) {
-            shell_color(sh, "\033[92m");
-            shell_printf(sh, "%s is a valid LQX image\n", argv[2]);
-            shell_reset_color(sh);
-            return 0;
-        }
-
-        shell_color(sh, "\033[91m");
-        shell_printf(sh, "%s is not loadable: %s\n", argv[2],
-                     reason ? reason : "unknown");
-        shell_reset_color(sh);
-        return 1;
+    if (strcmp(argv[1],"verify")==0){
+        struct fs_stat st;
+        if (fs_stat(resolved,&st)!=0){ shell_error(sh,"qtx: no such file"); return 1; }
+        void *buf=kmalloc(st.size);
+        if (!buf){ shell_error(sh,"out of mem"); return 1; }
+        size_t got=0; fs_read_file(resolved,buf,st.size,&got);
+        const char *reason=NULL;
+        int res=qtx_validate(buf,got,&reason);
+        kfree(buf);
+        if (res==0){ shell_color(sh,"\033[92m"); shell_printf(sh,"%s is valid QTX\n",argv[2]); shell_reset_color(sh); return 0; }
+        shell_color(sh,"\033[91m"); shell_printf(sh,"%s invalid: %s\n",argv[2],reason?reason:"unknown"); shell_reset_color(sh); return 1;
     }
-
-    if (strcmp(argv[1], "run") == 0) {
-        struct lqx_image image;
-        if (lqx_load(resolved, &image) != 0) {
-            shell_error(sh, "lqx: could not load %s (see the log for why)",
-                        argv[2]);
-            return 1;
-        }
-
-        int pid = lqx_run(&image, argc - 2, argv + 2);
-        if (pid < 0) {
-            shell_error(sh, "lqx: could not start the program");
-            lqx_unload(&image);
-            return 1;
-        }
-
-        shell_printf(sh, "started '%s' as pid %d\n", image.name, pid);
+    if (strcmp(argv[1],"run")==0){
+        struct qtx_image img;
+        if (qtx_load(resolved,&img)!=0){ shell_error(sh,"qtx: could not load %s",argv[2]); return 1; }
+        int pid=qtx_run(&img,argc-2,argv+2);
+        if (pid<0){ shell_error(sh,"qtx: could not start"); qtx_unload(&img); return 1; }
+        shell_printf(sh,"started '%s' as pid %d (Ring3 изолирован)\n",img.name,pid);
         return 0;
     }
-
-    shell_error(sh, "lqx: unknown subcommand '%s'", argv[1]);
-    return 1;
+    shell_error(sh,"qtx: unknown subcommand '%s'",argv[1]); return 1;
 }
 
-/* --- icons ------------------------------------------------------------- */
+/* --- QDL --------------------------------------------------------------- */
 
-static int cmd_qac(struct shell *sh, int argc, char **argv)
+static int cmd_qdl(struct shell *sh, int argc, char **argv)
 {
-    if (argc < 2 || strcmp(argv[1], "list") == 0) {
-        int count = qac_registry_count();
-        shell_printf(sh, "Loaded icons (%d):\n\n", count);
-        for (int i = 0; i < count; i++) {
-            const char *name = qac_registry_name(i);
-            const struct qac_image *image = qac_get(name);
-            shell_printf(sh, "  %-16s %dx%d\n", name,
-                         image ? image->width : 0, image ? image->height : 0);
+    if (argc<2||strcmp(argv[1],"list")==0){
+        shell_printf(sh,"Loaded QDLs: %d\n",qdl_loaded_count());
+        for (int i=0;i<qdl_loaded_count();i++){
+            const char *name=qdl_loaded_name(i);
+            shell_printf(sh,"  %s\n",name?name:"?");
         }
+        qdl_describe(sh);
         return 0;
     }
-
-    if (strcmp(argv[1], "info") == 0) {
-        if (argc < 3) {
-            shell_error(sh, "usage: qac info <file>");
-            return 1;
-        }
-
+    if (strcmp(argv[1],"load")==0){
+        if (argc<3){ shell_error(sh,"usage: qdl load <file.qdl>"); return 1; }
         char resolved[FS_PATH_MAX];
-        shell_resolve(sh, argv[2], resolved, sizeof(resolved));
+        shell_resolve(sh,argv[2],resolved,sizeof(resolved));
+        if (qdl_load(resolved)==0){ shell_printf(sh,"loaded %s\n",resolved); return 0; }
+        shell_error(sh,"qdl: failed to load %s",resolved); return 1;
+    }
+    if (strcmp(argv[1],"unload")==0){
+        if (argc<3){ shell_error(sh,"usage: qdl unload <name>"); return 1; }
+        if (qdl_unload(argv[2])==0){ shell_printf(sh,"unloaded %s\n",argv[2]); return 0; }
+        shell_error(sh,"qdl: %s not loaded or in use",argv[2]); return 1;
+    }
+    if (strcmp(argv[1],"info")==0){
+        if (argc<3){ shell_error(sh,"usage: qdl info <file>"); return 1; }
+        char resolved[FS_PATH_MAX];
+        shell_resolve(sh,argv[2],resolved,sizeof(resolved));
+        struct qx_header hdr;
+        if (qtx_probe(resolved,&hdr)!=0){ shell_error(sh,"qdl: not a QDL"); return 1; }
+        shell_printf(sh,"%s\n",resolved);
+        qtx_describe(&hdr,sh);
+        return 0;
+    }
+    shell_error(sh,"qdl: unknown subcommand"); return 1;
+}
 
-        char   buffer[2048];
-        size_t got = 0;
-        if (fs_read_file(resolved, buffer, sizeof(buffer), &got) != 0) {
-            shell_error(sh, "qac: %s: cannot read", argv[2]);
-            return 1;
+/* --- QTI --------------------------------------------------------------- */
+
+static int cmd_qti(struct shell *sh, int argc, char **argv)
+{
+    if (argc<2||strcmp(argv[1],"list")==0){
+        int count=qti_registry_count();
+        shell_printf(sh,"Loaded QTI icons (%d), default %d px:\n\n",count,QTI_DEFAULT_SIZE);
+        for (int i=0;i<count;i++){
+            const char *name=qti_registry_name(i);
+            const struct qti_image *img=qti_get(name);
+            shell_printf(sh,"  %-16s %dx%d\n",name,img?img->width:0,img?img->height:0);
         }
-
-        struct qac_header header;
-        if (qac_probe(buffer, got, &header) != 0) {
-            shell_error(sh, "qac: %s is not a QAC icon", argv[2]);
-            return 1;
-        }
-
-        shell_printf(sh, "%s\n", resolved);
-        shell_printf(sh, "  %-14s QACI version %u\n", "Format", header.version);
-        shell_printf(sh, "  %-14s %.12s\n", "Name", header.name);
-        shell_printf(sh, "  %-14s %u\n", "Frames", header.frame_count);
-        shell_printf(sh, "  %-14s %u bytes\n", "Payload", header.payload_size);
-        shell_printf(sh, "  %-14s 0x%08x\n", "Checksum", header.checksum);
-
-        /* Decode the largest frame so the real dimensions can be shown. */
-        struct qac_image image;
-        if (qac_load(resolved, 256, &image) == 0) {
-            shell_printf(sh, "  %-14s %dx%d\n", "Largest frame", image.width,
-                         image.height);
-            int raw = image.width * image.height * 4;
-            shell_printf(sh, "  %-14s %dx smaller than raw\n", "Compression",
-                         header.payload_size
-                             ? raw / (int)header.payload_size
-                             : 1);
-            qac_free(&image);
+        shell_printf(sh,"\nSizes: 16,32,64,128,256 – default 64 (third). Use qti info <file>\n");
+        return 0;
+    }
+    if (strcmp(argv[1],"info")==0){
+        if (argc<3){ shell_error(sh,"usage: qti info <file>"); return 1; }
+        char resolved[FS_PATH_MAX];
+        shell_resolve(sh,argv[2],resolved,sizeof(resolved));
+        char buffer[4096]; size_t got=0;
+        if (fs_read_file(resolved,buffer,sizeof(buffer),&got)!=0){ shell_error(sh,"qti: cannot read"); return 1; }
+        struct qti_header hdr;
+        if (qti_probe(buffer,got,&hdr)!=0){ shell_error(sh,"qti: not a QTI icon"); return 1; }
+        shell_printf(sh,"%s\n",resolved);
+        shell_printf(sh,"  Format   QTI1 v%u\n",hdr.version);
+        shell_printf(sh,"  Name     %.12s\n",hdr.name);
+        shell_printf(sh,"  Frames   %u (16,32,64,128,256 – default 64)\n",hdr.frame_count);
+        shell_printf(sh,"  Payload  %u bytes\n",hdr.payload_size);
+        shell_printf(sh,"  Checksum 0x%08x\n",hdr.checksum);
+        struct qti_image img;
+        if (qti_load(resolved,256,&img)==0){
+            shell_printf(sh,"  Largest  %dx%d\n",img.width,img.height);
+            qti_free(&img);
         }
         return 0;
     }
+    shell_error(sh,"qti: unknown subcommand"); return 1;
+}
 
-    shell_error(sh, "qac: unknown subcommand '%s'", argv[1]);
-    shell_printf(sh, "usage: qac [list|info <file>]\n");
-    return 1;
+/* --- qtpkg ------------------------------------------------------------- */
+
+static int cmd_qtpkg(struct shell *sh, int argc, char **argv)
+{
+    extern int qtpkg_command(struct shell *sh, int argc, char **argv);
+    return qtpkg_command(sh, argc, argv);
 }
 
 /* --- fonts ------------------------------------------------------------- */
 
 static int cmd_fonts(struct shell *sh, int argc, char **argv)
 {
-    /*
-     * "set" needs both a target and a font id. Check for the incomplete form
-     * only — an earlier version tested argc >= 3 here, which swallowed the
-     * complete four-argument form before it could ever be handled.
-     */
-    if (argc < 4 && argc >= 2 && strcmp(argv[1], "set") == 0) {
-        shell_error(sh, "usage: fonts set <ui|terminal> <font-id>");
-        return 1;
+    if (argc<4 && argc>=2 && strcmp(argv[1],"set")==0){ shell_error(sh,"usage: fonts set <ui|terminal> <font-id>"); return 1; }
+    if (argc>=4 && strcmp(argv[1],"set")==0){
+        if (strcmp(argv[2],"ui")==0) font_set_ui(argv[3]);
+        else if (strcmp(argv[2],"terminal")==0) font_set_terminal(argv[3]);
+        else { shell_error(sh,"expected ui or terminal"); return 1; }
+        shell_printf(sh,"%s font set to %s\n",argv[2],argv[3]); return 0;
     }
-
-    if (argc >= 4 && strcmp(argv[1], "set") == 0) {
-        if (strcmp(argv[2], "ui") == 0) {
-            font_set_ui(argv[3]);
-        } else if (strcmp(argv[2], "terminal") == 0) {
-            font_set_terminal(argv[3]);
-        } else {
-            shell_error(sh, "fonts: expected 'ui' or 'terminal'");
-            return 1;
-        }
-        shell_printf(sh, "%s font set to %s\n", argv[2], argv[3]);
-        return 0;
-    }
-
-    shell_printf(sh, "%-18s %-10s %-6s %s\n", "ID", "WEIGHT", "MONO",
-                 "DESCRIPTION");
-
-    for (int i = 0; i < font_count(); i++) {
-        const struct font *font = font_at(i);
-        bool_t is_ui       = (font == font_ui());
-        bool_t is_terminal = (font == font_terminal());
-
-        shell_printf(sh, "%-18s %-10s %-6s %s", font->id,
-                     font->weight == FONT_BOLD ? "bold" : "regular",
-                     font->monospace ? "yes" : "no", font->description);
-
-        if (is_ui || is_terminal) {
-            shell_color(sh, "\033[92m");
-            shell_printf(sh, "  [%s%s%s]", is_ui ? "interface" : "",
-                         (is_ui && is_terminal) ? ", " : "",
-                         is_terminal ? "terminal" : "");
+    shell_printf(sh,"%-18s %-10s %-6s %s\n","ID","WEIGHT","MONO","DESCRIPTION");
+    for (int i=0;i<font_count();i++){
+        const struct font *f=font_at(i);
+        bool_t is_ui=(f==font_ui());
+        bool_t is_term=(f==font_terminal());
+        shell_printf(sh,"%-18s %-10s %-6s %s",f->id,f->weight==FONT_BOLD?"bold":"regular",f->monospace?"yes":"no",f->description);
+        if (is_ui||is_term){
+            shell_color(sh,"\033[92m");
+            shell_printf(sh,"  [%s%s%s]",is_ui?"interface":"",(is_ui&&is_term)?", ":"",is_term?"terminal":"");
             shell_reset_color(sh);
         }
-        shell_printf(sh, "\n");
+        shell_printf(sh,"\n");
     }
-
-    shell_printf(sh, "\nChange one with: fonts set <ui|terminal> <id>\n");
-
-    /* A specimen line, so the difference is visible rather than described. */
-    shell_printf(sh, "\nSpecimen: The quick brown fox jumps over 1,234 lazy "
-                     "dogs. Il1O0\n");
+    shell_printf(sh,"\nChange: fonts set <ui|terminal> <id>\n");
+    shell_printf(sh,"Specimen: The quick brown fox jumps over 1,234 lazy dogs. Il1O0\n");
     return 0;
 }
 
-/* --- the table --------------------------------------------------------- */
-
 static const struct shell_command commands[] = {
-    {"fetch", "download a URL over HTTP", "fetch <url> [-o file] [-H]",
-     "Fetches a page or file over plain HTTP. Qira has no TLS, so https\n"
-     "addresses are refused.",
-     cmd_fetch, 0},
-
-    {"lookup", "resolve a hostname", "lookup <hostname>", NULL, cmd_lookup, 0},
-
-    {"git", "interact with a git remote",
-     "git <ls-remote|clone|version> [url]",
-     "Speaks git's smart HTTP protocol. Reference discovery works fully;\n"
-     "clone downloads a packfile but cannot unpack it yet.",
-     cmd_git, 0},
-
-    {"lqx", "inspect and run Qira executables",
-     "lqx <info|verify|exports|run> [file]",
-     "LQX is the native executable format: a QX header followed by sections,\n"
-     "imports and symbols. See docs/LQX.md.",
-     cmd_lqx, 0},
-
-    {"qac", "inspect Qira icon files", "qac [list|info <file>]",
-     "QAC is the icon format: several sizes per file, each independently\n"
-     "encoded as raw, run-length or palette data.",
-     cmd_qac, 0},
-
-    {"fonts", "list or change the system typefaces",
-     "fonts [set <ui|terminal> <id>]", NULL, cmd_fonts, 0},
+    {"fetch", "download URL over HTTP", "fetch <url> [-o file] [-H]", "Plain HTTP only – TLS not yet supported, https:// gives clear error.", cmd_fetch,0},
+    {"lookup", "resolve hostname", "lookup <hostname>", NULL, cmd_lookup,0},
+    {"qtx", "inspect/run Qito executables (.qtx)", "qtx <info|verify|exports|run|list> [file]", "QTX is native: QX header, 88B, format 'X'. See docs/QTX.md", cmd_qtx,0},
+    {"qdl", "dynamic library manager (.qdl)", "qdl <list|load|unload|info> [file]", "QDL: format 'D', library flag, export table, refcounted, on-demand from /lib/*.qdl", cmd_qdl,0},
+    {"qti", "inspect Qito icons (.qti)", "qti [list|info <file>]", "QTI: real pixels, 5 sizes 16/32/64/128/256 default 64, RAW/RLE/INDEX. See docs/QTI.md", cmd_qti,0},
+    {"qtpkg", "package manager – install qasm/qcc from registry", "qtpkg <install|list|info> – qasm/qcc must be downloaded from https://github.com/qitoteam/qtpkg-registry, not bundled", "Entry /user/qtpkg/entry.var -> profile -> payload, TLS honest error for https://. qasm/qcc not bundled, must be installed via qtpkg from registry. See docs/QTPKG.md", cmd_qtpkg,0},
+    {"fonts", "list/change typefaces", "fonts [set <ui|terminal> <id>]", NULL, cmd_fonts,0},
+    {"lqx", "legacy alias for qtx", "qtx <...>", NULL, cmd_qtx, CMD_HIDDEN},
+    {"qac", "legacy alias for qti", "qti <...>", NULL, cmd_qti, CMD_HIDDEN},
 };
 
 const struct shell_command *ultrashell_net_commands(int *count)

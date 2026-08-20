@@ -1,5 +1,5 @@
 /*
- * Qira OS - PCI bus enumeration
+ * QitoOS - PCI bus enumeration
  *
  * Uses the legacy configuration mechanism #1 (I/O ports 0xCF8/0xCFC) to walk
  * every bus, slot and function, recording what is present so drivers and the
@@ -152,7 +152,7 @@ void pci_init(void)
 
     /*
      * Brute-force scan of all 256 buses. This is slower than following the
-     * bridge topology but is simple and reliable on the hardware Qira targets.
+     * bridge topology but is simple and reliable on the hardware Qito targets.
      */
     for (int bus = 0; bus < 256; bus++) {
         for (int slot = 0; slot < 32; slot++) {

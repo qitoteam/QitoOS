@@ -2,7 +2,7 @@
 """
 capture_screenshots.py - produce the screenshots used in the documentation.
 
-Boots Qira OS repeatedly, each time with a kernel command line that opens a
+Boots QitoOS repeatedly, each time with a kernel command line that opens a
 different application and captures the frame, then decodes the captures into
 PNG files under docs/screenshots/.
 
@@ -66,13 +66,13 @@ SCENES = [
     (
         "fonts",
         "The selectable font registry",
-        "autorun=fonts;fonts_set_terminal_qira-mono-bold;version",
+        "autorun=fonts;fonts_set_terminal_qito-mono-bold;version",
         10000,
     ),
     (
         "formats",
-        "QAC icons and LQX executables",
-        "autorun=qac_list;lqx_info_/bin/hello.lqx",
+        "QTI icons and QTX executables",
+        "autorun=qti_list;qtx_info_/bin/hello.lqx",
         10000,
     ),
 ]
@@ -86,8 +86,8 @@ def build_iso(cmdline: str, output: str) -> None:
             sys.executable,
             os.path.join(ROOT, "tools", "mkiso.py"),
             "--boot", os.path.join(build, "boot.bin"),
-            "--kernel", os.path.join(build, "qira-kernel.bin"),
-            "--ramdisk", os.path.join(build, "qirafs.img"),
+            "--kernel", os.path.join(build, "qito-kernel.bin"),
+            "--ramdisk", os.path.join(build, "qitofs.img"),
             "--output", output,
             "--cmdline", cmdline,
         ],
@@ -97,7 +97,7 @@ def build_iso(cmdline: str, output: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Capture Qira OS screenshots")
+    parser = argparse.ArgumentParser(description="Capture QitoOS screenshots")
     parser.add_argument("--output", default=os.path.join(ROOT, "docs", "screenshots"))
     parser.add_argument("--timeout", type=int, default=150)
     parser.add_argument("--only", default=None, help="capture just one scene")
@@ -121,7 +121,7 @@ def main() -> int:
 
         print(f"\n=== {name}: {description}")
 
-        cmdline = f"root=qirafs console=fb {autorun} capture={capture_ms}".strip()
+        cmdline = f"root=qitofs console=fb {autorun} capture={capture_ms}".strip()
         iso = os.path.join(build, f"shot-{name}.iso")
         build_iso(cmdline, iso)
 

@@ -1,5 +1,5 @@
 /*
- * Qira OS - framebuffer rasteriser
+ * QitoOS - framebuffer rasteriser
  *
  * Everything is drawn into a 32-bit ARGB back buffer in system RAM and then
  * copied to video memory. Reading from a VBE framebuffer is extremely slow
@@ -37,7 +37,7 @@ static inline uint32_t pack(color_t c)
            ((uint32_t)COLOR_B(c) << shift_b);
 }
 
-bool_t fb_init(const struct qira_boot_info *boot)
+bool_t fb_init(const struct qito_boot_info *boot)
 {
     if (!boot->fb_valid || boot->fb_addr == 0) {
         KLOG_WARN("fb", "no linear framebuffer supplied by the bootloader");

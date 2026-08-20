@@ -1,8 +1,8 @@
 /*
- * Qira OS - 16550 UART driver
+ * QitoOS - 16550 UART driver
  */
-#ifndef QIRA_SERIAL_H
-#define QIRA_SERIAL_H
+#ifndef QITO_SERIAL_H
+#define QITO_SERIAL_H
 
 #include <kernel/types.h>
 
@@ -18,4 +18,4 @@ void serial_write(const char *s);
 void serial_write_len(const char *s, size_t len);
 int  serial_getc_nonblock(void);
 
-#endif /* QIRA_SERIAL_H */
+#endif /* QITO_SERIAL_H */

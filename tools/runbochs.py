@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-runbochs.py - boot a Qira OS ISO under the Bochs x86 emulator.
+runbochs.py - boot a QitoOS ISO under the Bochs x86 emulator.
 
 Bochs is used by the automated boot tests because it is easy to build from
 source in restricted environments and it faithfully emulates the BIOS
-interfaces (INT 13h extensions, VBE) that the Qira bootloader relies on.
+interfaces (INT 13h extensions, VBE) that the Qito bootloader relies on.
 
 The generated configuration wires the serial port to a file so the test
 harness can assert on the kernel's boot log.
@@ -61,7 +61,7 @@ romimage: file="{bios}"
 vgaromimage: file="{vgabios}"
 megs: {memory}
 
-# Boot from the Qira OS CD.
+# Boot from the QitoOS CD.
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 ata0-master: type=cdrom, path="{iso}", status=inserted
 boot: cdrom
@@ -69,7 +69,7 @@ boot: cdrom
 # The kernel log is mirrored to COM1.
 com1: enabled=1, mode=file, dev="{serial_log}"
 
-# Devices Qira OS drivers probe for.
+# Devices QitoOS drivers probe for.
 mouse: enabled=1, type=ps2
 clock: sync=none, time0=local
 # A modern 64-bit CPU model so long mode, SSE2 and the CPUID leaves the
@@ -94,7 +94,7 @@ debug: action=ignore
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run Qira OS under Bochs")
+    parser = argparse.ArgumentParser(description="Run QitoOS under Bochs")
     parser.add_argument("--iso", required=True)
     parser.add_argument("--memory", type=int, default=512)
     parser.add_argument(
@@ -115,7 +115,7 @@ def main() -> int:
 
     binary, share = find_bochs()
 
-    workdir = tempfile.mkdtemp(prefix="qira-bochs-")
+    workdir = tempfile.mkdtemp(prefix="qito-bochs-")
     config_path = os.path.join(workdir, "bochsrc")
     serial_log = os.path.abspath(args.serial_log or os.path.join(workdir, "serial.log"))
 

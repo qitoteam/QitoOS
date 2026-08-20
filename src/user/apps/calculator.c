@@ -1,5 +1,5 @@
 /*
- * Qira OS - Calculator
+ * QitoOS - Calculator
  *
  * An integer calculator with a clickable keypad and keyboard entry. Shares the
  * expression evaluator design used by UltraShell's `calc` command.

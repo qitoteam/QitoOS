@@ -1,8 +1,8 @@
 /*
- * Qira OS - system configuration store
+ * QitoOS - system configuration store
  *
  * Settings live in a fixed table seeded with sensible defaults, then merged
- * with whatever /etc/qira.conf contains. Saving rewrites the file in a simple
+ * with whatever /etc/qito.conf contains. Saving rewrites the file in a simple
  * `key = value` format with comments preserved for the section headers.
  */
 
@@ -27,7 +27,7 @@ struct default_entry {
 
 static const struct default_entry defaults[] = {
     /* identity */
-    {"hostname", "qira", CONFIG_STRING, "network name of this machine"},
+    {"hostname", "qito", CONFIG_STRING, "network name of this machine"},
     {"timezone", "UTC", CONFIG_STRING, "display timezone"},
     {"locale", "en_US", CONFIG_STRING, "language and region"},
 
@@ -64,7 +64,7 @@ static const struct default_entry defaults[] = {
     {"input.key_repeat_ms", "40", CONFIG_INT, "key repeat interval"},
 
     /* network */
-    {"net.hostname", "qira", CONFIG_STRING, "hostname advertised on the network"},
+    {"net.hostname", "qito", CONFIG_STRING, "hostname advertised on the network"},
     {"net.enabled", "1", CONFIG_BOOL, "bring network interfaces up at boot"},
 };
 
@@ -183,7 +183,7 @@ int config_save(void)
     size_t pos = 0;
 
     pos += (size_t)snprintf(buffer + pos, sizeof(buffer) - pos,
-                            "# Qira OS system configuration\n"
+                            "# QitoOS system configuration\n"
                             "# Written by the configuration service; edit with\n"
                             "# 'qcsh config set <key> <value>' or by hand.\n\n");
 

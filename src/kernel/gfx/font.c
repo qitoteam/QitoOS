@@ -1,5 +1,5 @@
 /*
- * Qira OS - font registry
+ * QitoOS - font registry
  */
 
 #include <kernel/font.h>
@@ -12,15 +12,15 @@ static const struct font *terminal_font;
 
 int font_count(void)
 {
-    return qira_font_count;
+    return qito_font_count;
 }
 
 const struct font *font_at(int index)
 {
-    if (index < 0 || index >= qira_font_count) {
+    if (index < 0 || index >= qito_font_count) {
         return NULL;
     }
-    return &qira_fonts[index];
+    return &qito_fonts[index];
 }
 
 const struct font *font_find(const char *id)
@@ -28,15 +28,15 @@ const struct font *font_find(const char *id)
     if (!id) {
         return NULL;
     }
-    for (int i = 0; i < qira_font_count; i++) {
-        if (strcmp(qira_fonts[i].id, id) == 0) {
-            return &qira_fonts[i];
+    for (int i = 0; i < qito_font_count; i++) {
+        if (strcmp(qito_fonts[i].id, id) == 0) {
+            return &qito_fonts[i];
         }
     }
     /* Accept the display name too, which is what Settings shows. */
-    for (int i = 0; i < qira_font_count; i++) {
-        if (strcasecmp(qira_fonts[i].name, id) == 0) {
-            return &qira_fonts[i];
+    for (int i = 0; i < qito_font_count; i++) {
+        if (strcasecmp(qito_fonts[i].name, id) == 0) {
+            return &qito_fonts[i];
         }
     }
     return NULL;
@@ -44,7 +44,7 @@ const struct font *font_find(const char *id)
 
 const struct font *font_ui(void)
 {
-    return ui_font ? ui_font : &qira_fonts[0];
+    return ui_font ? ui_font : &qito_fonts[0];
 }
 
 const struct font *font_terminal(void)
@@ -100,8 +100,8 @@ int font_text_width(const struct font *font, const char *text, int scale)
 void font_init(void)
 {
     /* Defaults, overridden by the configuration if it names a valid face. */
-    ui_font       = font_find("qira-sans");
-    terminal_font = font_find("qira-mono");
+    ui_font       = font_find("qito-sans");
+    terminal_font = font_find("qito-mono");
 
     const char *configured_ui = config_get_string("desktop.font", NULL);
     if (configured_ui) {
@@ -120,5 +120,5 @@ void font_init(void)
     }
 
     KLOG_INFO("font", "%d faces available; interface %s, terminal %s",
-              qira_font_count, font_ui()->name, font_terminal()->name);
+              qito_font_count, font_ui()->name, font_terminal()->name);
 }

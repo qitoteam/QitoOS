@@ -1,12 +1,12 @@
 /*
- * Qira OS - system clipboard
+ * QitoOS - system clipboard
  *
  * A single shared buffer that any application or shell can read and write.
  * Having one owner in the kernel rather than per-application copies is what
  * makes copy and paste work *between* programs, which is the whole point.
  */
-#ifndef QIRA_CLIPBOARD_H
-#define QIRA_CLIPBOARD_H
+#ifndef QITO_CLIPBOARD_H
+#define QITO_CLIPBOARD_H
 
 #include <kernel/types.h>
 
@@ -37,4 +37,4 @@ void clipboard_clear(void);
 /* A short, single-line preview for the user interface. */
 void clipboard_preview(char *out, size_t size);
 
-#endif /* QIRA_CLIPBOARD_H */
+#endif /* QITO_CLIPBOARD_H */

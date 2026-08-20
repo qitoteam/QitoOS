@@ -1,10 +1,10 @@
 /*
- * Qira OS - system call interface
+ * QitoOS - system call interface
  *
  * Shared between the kernel and userspace: the numbers here are the ABI.
  */
-#ifndef QIRA_SYSCALL_H
-#define QIRA_SYSCALL_H
+#ifndef QITO_SYSCALL_H
+#define QITO_SYSCALL_H
 
 #include <kernel/types.h>
 
@@ -83,13 +83,13 @@
 #define QE_NOTEMPTY  39
 #define QE_AGAIN     11
 
-const char *qira_strerror(int error);
+const char *qito_strerror(int error);
 
-#ifdef QIRA_KERNEL
+#ifdef QITO_KERNEL
 struct interrupt_frame;
 void syscall_init(void);
 void syscall_dispatch(struct interrupt_frame *frame);
 uint64_t syscall_count(uint32_t number);
 #endif
 
-#endif /* QIRA_SYSCALL_H */
+#endif /* QITO_SYSCALL_H */

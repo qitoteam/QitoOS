@@ -1,5 +1,5 @@
 /*
- * Qira OS - Network
+ * QitoOS - Network
  *
  * Shows what the network stack is doing: interfaces and their counters, the
  * TCP socket table, and interactive tools for ping, DNS lookup and HTTP
@@ -10,7 +10,7 @@
 #include <kernel/desktop.h>
 #include <kernel/net.h>
 #include <kernel/http.h>
-#include <kernel/git.h>
+#include <kernel/fs.h>
 #include <kernel/string.h>
 #include <kernel/printf.h>
 #include <kernel/mm.h>
@@ -31,7 +31,7 @@ typedef enum {
     ACTION_PING,
     ACTION_LOOKUP,
     ACTION_FETCH,
-    ACTION_GIT,
+    ACTION_QTPKG,
 } action_t;
 
 struct network_state {
@@ -74,7 +74,7 @@ static void output_line(struct network_state *state, const char *fmt, ...)
     state->output_count++;
 }
 
-static const char *tool_labels[] = {"ping", "lookup", "fetch", "git ls-remote"};
+static const char *tool_labels[] = {"ping", "lookup", "fetch", "qtpkg search"};
 
 /* --- the actions ------------------------------------------------------- */
 
@@ -184,28 +184,44 @@ static void run_fetch(struct network_state *state, const char *url)
     http_free(&response);
 }
 
-static void run_git(struct network_state *state, const char *url)
+static void run_qtpkg(struct network_state *state, const char *query)
 {
-    output_line(state, "git ls-remote %s", url);
-
-    static struct git_ref refs[GIT_MAX_REFS];
-    char error[128] = "";
-
-    int count = git_ls_remote(url, refs, GIT_MAX_REFS, error, sizeof(error));
-
-    if (count < 0) {
-        output_line(state, "  failed: %s", error);
+    output_line(state, "qtpkg search %s", query);
+    output_line(state, "  Searching %s ...", "/user/qtpkg/entry.var");
+    struct fs_stat st;
+    if (fs_stat("/user/qtpkg/entry.var",&st)!=0) {
+        output_line(state, "  No registry at /user/qtpkg/entry.var");
+        output_line(state, "  Create one or use qtpkg list in UltraShell");
         output_line(state, "");
         return;
     }
-
-    output_line(state, "  %d reference(s)", count);
-    for (int i = 0; i < count && i < 40; i++) {
-        char hash[12];
-        strlcpy(hash, refs[i].hash, sizeof(hash));
-        output_line(state, "  %s  %s", hash, refs[i].name);
+    char *buf = kmalloc(st.size+1);
+    if (!buf) { output_line(state,"  out of memory"); return; }
+    size_t got=0;
+    fs_read_file("/user/qtpkg/entry.var",buf,st.size,&got);
+    buf[got]='\0';
+    int matches=0;
+    char *cursor=buf;
+    while (cursor && *cursor) {
+        char *next=strchr(cursor,'\n');
+        if (next) *next='\0';
+        if (strstr(cursor,query)) {
+            // trim leading spaces
+            char *trim=cursor;
+            while (*trim==' '||*trim=='\t') trim++;
+            if (*trim) {
+                output_line(state, "  %s", trim);
+                matches++;
+                if (matches>=20) break;
+            }
+        }
+        if (!next) break;
+        cursor=next+1;
     }
-    output_line(state, "");
+    if (matches==0) output_line(state,"  No matches for '%s'",query);
+    else output_line(state,"  %d match(es)",matches);
+    output_line(state,"");
+    kfree(buf);
 }
 
 /* --- the application --------------------------------------------------- */
@@ -214,12 +230,12 @@ static void network_on_open(struct window *win)
 {
     struct network_state *state = (struct network_state *)win->app_state;
 
-    output_line(state, "Qira network tools");
+    output_line(state, "Qito network tools");
     output_line(state, "");
     output_line(state, "Pick a tool below, type a target and press Enter.");
     output_line(state, "");
-    output_line(state, "Note: Qira has no TLS, so fetch and git work over");
-    output_line(state, "http:// only.");
+    output_line(state, "Note: Qito has no TLS yet – fetch and qtpkg work over");
+    output_line(state, "http:// only, https:// gives clear error.");
     output_line(state, "");
 
     strlcpy(state->input, "example.com", sizeof(state->input));
@@ -458,7 +474,7 @@ static bool_t network_on_key(struct window *win, uint32_t key, uint32_t modifier
             state->editing = false;
 
             static const action_t actions[] = {ACTION_PING, ACTION_LOOKUP,
-                                               ACTION_FETCH, ACTION_GIT};
+                                               ACTION_FETCH, ACTION_QTPKG};
             state->pending = actions[state->tool_index];
             strlcpy(state->pending_argument, state->input,
                     sizeof(state->pending_argument));
@@ -585,7 +601,7 @@ static bool_t network_tick(struct window *win)
     case ACTION_PING:   run_ping(state, state->pending_argument);   break;
     case ACTION_LOOKUP: run_lookup(state, state->pending_argument); break;
     case ACTION_FETCH:  run_fetch(state, state->pending_argument);  break;
-    case ACTION_GIT:    run_git(state, state->pending_argument);    break;
+    case ACTION_QTPKG:    run_qtpkg(state, state->pending_argument);    break;
     default: break;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Qira OS - physical memory manager
+ * QitoOS - physical memory manager
  *
  * A bitmap allocator over all usable physical page frames reported by the
  * bootloader's E820 map. One bit per 4 KiB frame: set means allocated.
@@ -45,11 +45,11 @@ static inline bool_t bitmap_test(uint64_t frame)
 static const char *mem_type_name(uint32_t type)
 {
     switch (type) {
-    case QIRA_MEM_USABLE:    return "usable";
-    case QIRA_MEM_RESERVED:  return "reserved";
-    case QIRA_MEM_ACPI_RECL: return "ACPI reclaimable";
-    case QIRA_MEM_ACPI_NVS:  return "ACPI NVS";
-    case QIRA_MEM_BAD:       return "bad";
+    case QITO_MEM_USABLE:    return "usable";
+    case QITO_MEM_RESERVED:  return "reserved";
+    case QITO_MEM_ACPI_RECL: return "ACPI reclaimable";
+    case QITO_MEM_ACPI_NVS:  return "ACPI NVS";
+    case QITO_MEM_BAD:       return "bad";
     default:                 return "unknown";
     }
 }
@@ -70,10 +70,10 @@ void pmm_reserve_region(phys_addr_t base, uint64_t length)
     }
 }
 
-void pmm_init(const struct qira_boot_info *boot)
+void pmm_init(const struct qito_boot_info *boot)
 {
-    const struct qira_mmap_entry *map =
-        (const struct qira_mmap_entry *)(uintptr_t)boot->mmap_addr;
+    const struct qito_mmap_entry *map =
+        (const struct qito_mmap_entry *)(uintptr_t)boot->mmap_addr;
     uint32_t count = boot->mmap_count;
 
     spinlock_init(&pmm_lock, "pmm");
@@ -92,7 +92,7 @@ void pmm_init(const struct qira_boot_info *boot)
                   mem_type_name(map[i].type));
 
         total_memory += map[i].length;
-        if (map[i].type == QIRA_MEM_USABLE) {
+        if (map[i].type == QITO_MEM_USABLE) {
             usable_memory += map[i].length;
             if (end > highest) {
                 highest = end;
@@ -119,7 +119,7 @@ void pmm_init(const struct qira_boot_info *boot)
     uint64_t bitmap_phys  = 0;
 
     for (uint32_t i = 0; i < count; i++) {
-        if (map[i].type != QIRA_MEM_USABLE) {
+        if (map[i].type != QITO_MEM_USABLE) {
             continue;
         }
         uint64_t base = PAGE_ALIGN_UP(map[i].base);
@@ -155,7 +155,7 @@ void pmm_init(const struct qira_boot_info *boot)
     used_frames = frame_count;
 
     for (uint32_t i = 0; i < count; i++) {
-        if (map[i].type != QIRA_MEM_USABLE) {
+        if (map[i].type != QITO_MEM_USABLE) {
             continue;
         }
         uint64_t first = PAGE_ALIGN_UP(map[i].base) / PAGE_SIZE;

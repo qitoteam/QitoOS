@@ -1,5 +1,5 @@
 /*
- * Qira OS - component registry and the `pkg` command
+ * QitoOS - component registry and the `pkg` command
  */
 
 #include <kernel/pkg.h>
@@ -36,13 +36,13 @@ static void add(const char *name, const char *version, const char *summary,
 void pkg_init(void)
 {
     package_count = 0;
-    const char *v = QIRA_VERSION_STRING;
+    const char *v = QITO_VERSION_STRING;
 
     /* Core system. */
-    add("qira-kernel", v, "Qira OS kernel: memory, tasks, syscalls", PKG_CORE,
+    add("qito-kernel", v, "QitoOS kernel: memory, tasks, syscalls", PKG_CORE,
         true, 96);
-    add("qira-boot", v, "bootloader and ISO boot chain", PKG_CORE, true, 4);
-    add("qirafs", v, "in-memory root filesystem and VFS", PKG_CORE, true, 24);
+    add("qito-boot", v, "bootloader and ISO boot chain", PKG_CORE, true, 4);
+    add("qitofs", v, "in-memory root filesystem and VFS", PKG_CORE, true, 24);
     add("libq", v, "freestanding C runtime shared by kernel and userspace",
         PKG_LIBRARY, true, 18);
 
@@ -58,11 +58,11 @@ void pkg_init(void)
     add("drv-rtc", v, "CMOS real-time clock", PKG_DRIVER, true, 3);
 
     /* Shells and desktop. */
-    add("qcsh", v, "QiraConfigShell: configuration and diagnostics", PKG_CORE,
+    add("qcsh", v, "QitoConfigShell: configuration and diagnostics", PKG_CORE,
         true, 28);
     add("ultrashell", v, "UltraShell: general-purpose command shell", PKG_CORE,
         true, 32);
-    add("qira-desktop", v, "desktop environment and window manager", PKG_CORE,
+    add("qito-desktop", v, "desktop environment and window manager", PKG_CORE,
         true, 48);
 
     /* Applications. */
@@ -241,19 +241,19 @@ int pkg_command(struct shell *sh, int argc, char **argv)
         pkg->enabled = installing;
         shell_printf(sh, "pkg: %s %s\n", pkg->name,
                      installing ? "enabled" : "disabled");
-        shell_printf(sh, "note: components are built into the Qira OS image, so "
+        shell_printf(sh, "note: components are built into the QitoOS image, so "
                          "this only changes whether it is active.\n");
         return 0;
     }
 
     if (strcmp(argv[1], "update") == 0) {
-        shell_printf(sh, "pkg: Qira OS components are versioned with the system "
+        shell_printf(sh, "pkg: QitoOS components are versioned with the system "
                          "image.\n");
-        shell_printf(sh, "     Installed version: %s (%s)\n", QIRA_VERSION_STRING,
-                     QIRA_CODENAME);
-        shell_printf(sh, "     Build: %s\n", QIRA_BUILD_ID);
+        shell_printf(sh, "     Installed version: %s (%s)\n", QITO_VERSION_STRING,
+                     QITO_CODENAME);
+        shell_printf(sh, "     Build: %s\n", QITO_BUILD_ID);
         shell_printf(sh, "     Update by building and booting a newer ISO from\n");
-        shell_printf(sh, "     %s\n", QIRA_PROJECT_URL);
+        shell_printf(sh, "     %s\n", QITO_PROJECT_URL);
         return 0;
     }
 

@@ -1,8 +1,8 @@
 /*
- * Qira OS - fundamental kernel types
+ * QitoOS - fundamental kernel types
  */
-#ifndef QIRA_TYPES_H
-#define QIRA_TYPES_H
+#ifndef QITO_TYPES_H
+#define QITO_TYPES_H
 
 typedef signed char        int8_t;
 typedef unsigned char      uint8_t;
@@ -71,4 +71,4 @@ typedef __builtin_va_list va_list;
 #define containerof(ptr, type, member) \
     ((type *)((char *)(ptr) - __builtin_offsetof(type, member)))
 
-#endif /* QIRA_TYPES_H */
+#endif /* QITO_TYPES_H */

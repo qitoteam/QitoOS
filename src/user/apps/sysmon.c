@@ -1,5 +1,5 @@
 /*
- * Qira OS - System Monitor
+ * QitoOS - System Monitor
  *
  * Live view of tasks, memory and interrupt activity, with a scrolling CPU
  * history graph. Tasks can be selected and terminated.

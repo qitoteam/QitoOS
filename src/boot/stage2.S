@@ -1,5 +1,5 @@
 /*
- * Qira OS - Stage 2 bootloader
+ * QitoOS - Stage 2 bootloader
  *
  * Runs in 16-bit real mode (with an "unreal mode" flat FS selector so that
  * memory above 1 MiB can be written directly) and is responsible for:
@@ -8,7 +8,7 @@
  *   2. Establishing unreal mode for 32-bit flat access through FS.
  *   3. Collecting the E820 physical memory map.
  *   4. Locating the ACPI RSDP.
- *   5. Loading the kernel image and QiraFS ramdisk over INT 13h extensions.
+ *   5. Loading the kernel image and QitoFS ramdisk over INT 13h extensions.
  *   6. Selecting and programming a VESA/VBE linear framebuffer.
  *   7. Building 4-level page tables covering the low 4 GiB.
  *   8. Switching to 64-bit long mode and entering the kernel.
@@ -18,11 +18,11 @@
  *   0x00000500-0x00007C00  real-mode stack
  *   0x00007C00-0x0000FC00  stage 1 + stage 2 image
  *   0x00010000-0x00018000  disk bounce buffer (32 KiB)
- *   0x00018000-0x00019000  struct qira_boot_info
+ *   0x00018000-0x00019000  struct qito_boot_info
  *   0x00019000-0x00020000  E820 memory map entries
  *   0x00020000-0x00026000  PML4 / PDPT / 4 page directories
  *   0x00100000-            kernel image
- *   0x02000000-            QiraFS ramdisk
+ *   0x02000000-            QitoFS ramdisk
  */
 
     .code16
@@ -48,9 +48,9 @@
 /* Payload descriptor - patched in place by tools/mkiso.py             */
 /* ------------------------------------------------------------------ */
     .align 16
-    .globl qira_payload_table
-qira_payload_table:
-    .ascii  "QIRAPLD1"          /* 0x00 signature located by the builder */
+    .globl qito_payload_table
+qito_payload_table:
+    .ascii  "QITOPLD1"          /* 0x00 signature located by the builder */
 ptbl_kernel_lba:
     .long   0                   /* 0x08 kernel LBA (2048-byte sectors)   */
 ptbl_kernel_sectors:
@@ -692,11 +692,11 @@ probe_mode:
 
 /* ------------------------------------------------------------------ */
 /* Boot information staging area                                       */
-/* Mirrors `struct qira_boot_info` from src/boot/bootinfo.h.            */
+/* Mirrors `struct qito_boot_info` from src/boot/bootinfo.h.            */
 /* ------------------------------------------------------------------ */
     .align 8
 bi_start:
-bi_magic:       .long   0x51424F49
+bi_magic:       .long   0x51544249
 bi_version:     .long   1
 bi_fb_addr:     .quad   0
 bi_fb_pitch:    .long   0
@@ -724,12 +724,12 @@ bi_ebda:        .quad   0
 bi_lowmem_kb:   .long   0
 bi_res1:        .long   0
 /*
- * The kernel command line. tools/mkiso.py locates the "QIRACMDLINE:" prefix
+ * The kernel command line. tools/mkiso.py locates the "QITOCMDLINE:" prefix
  * and overwrites the text that follows it, so an image can be built with
  * different boot options without rebuilding the loader.
  */
-bi_cmdline:     .ascii  "QIRACMDLINE:"
-                .asciz  "root=qirafs console=fb"
+bi_cmdline:     .ascii  "QITOCMDLINE:"
+                .asciz  "root=qitofs console=fb"
                 .space  256 - 12 - 23
 bi_end:
     .set BI_SIZE, bi_end - bi_start
@@ -884,12 +884,13 @@ long_entry:
     movq    $0x0000000000090000, %rsp
     xorq    %rbp, %rbp
 
-    /* System V: first argument in RDI. */
+    /* System V: first argument in RDI, magic in RAX per boot protocol. */
     movq    $BOOTINFO_PHYS, %rdi
+    movq    $0x51544249, %rax
 
-    /* Jump to the higher-half kernel entry point. */
-    movabsq $((KERNEL_VIRT_HI << 32) | KERNEL_VIRT_LO), %rax
-    jmp     *%rax
+    /* Jump to the higher-half kernel entry point via RCX so RAX keeps magic. */
+    movabsq $((KERNEL_VIRT_HI << 32) | KERNEL_VIRT_LO), %rcx
+    jmp     *%rcx
 
 1:  hlt
     jmp     1b
@@ -897,7 +898,7 @@ long_entry:
 /* ------------------------------------------------------------------ */
     .code16
     .section .stage2, "ax"
-msg_banner:   .asciz "Qira OS stage2\r\n"
+msg_banner:   .asciz "QitoOS stage2\r\n"
 msg_kernel:   .asciz "kernel "
 msg_ramdisk:  .asciz "\r\nramdisk "
 msg_ok:       .asciz " ok\r\n"

@@ -1,30 +1,31 @@
 /*
- * Qira OS - version information
+ * QitoOS - version information
  *
- * QIRA_BUILD_DATE and QIRA_BUILD_ID are injected by the build system; the
+ * QITO_BUILD_DATE and QITO_BUILD_ID are injected by the build system; the
  * fallbacks keep the tree compilable when building a single file by hand.
  */
-#ifndef QIRA_VERSION_H
-#define QIRA_VERSION_H
+#ifndef QITO_VERSION_H
+#define QITO_VERSION_H
 
-#define QIRA_VERSION_MAJOR 0
-#define QIRA_VERSION_MINOR 3
-#define QIRA_VERSION_PATCH 0
+#define QITO_VERSION_MAJOR 0
+#define QITO_VERSION_MINOR 4
+#define QITO_VERSION_PATCH 0
 
-#define QIRA_VERSION_STRING "0.3.0"
-#define QIRA_CODENAME       "Aurora"
+#define QITO_VERSION_STRING "0.4a"
+#define QITO_CODENAME       "Alpha"
 
-#ifndef QIRA_BUILD_DATE
-#define QIRA_BUILD_DATE "unknown"
+#ifndef QITO_BUILD_DATE
+#define QITO_BUILD_DATE "unknown"
 #endif
 
-#ifndef QIRA_BUILD_ID
-#define QIRA_BUILD_ID "dev"
+#ifndef QITO_BUILD_ID
+#define QITO_BUILD_ID "dev"
 #endif
 
-#define QIRA_PROJECT_NAME "Qira OS"
-#define QIRA_PROJECT_URL  "https://github.com/Seigh-sword/QiraOS"
-#define QIRA_MAINTAINER   "Seigh-sword"
-#define QIRA_CONTACT      "zack.yt.7085@gmail.com"
+#define QITO_PROJECT_NAME "QitoOS"
+#define QITO_PROJECT_URL  "https://github.com/qitoteam/QitoOS"
+#define QITO_MAINTAINER   "Seigh-sword"
+#define QITO_CONTACT      "zack.yt.7085@gmail.com"
+#define QITO_REGISTRY_URL "https://github.com/qitoteam/qtpkg-registry"
 
-#endif /* QIRA_VERSION_H */
+#endif /* QITO_VERSION_H */

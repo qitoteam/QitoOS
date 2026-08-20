@@ -1,12 +1,12 @@
 /*
- * Qira OS - shared shell engine
+ * QitoOS - shared shell engine
  *
  * Implements parsing, expansion, pipelines, redirection, variables, aliases,
  * history and line editing on behalf of both QCSH and UltraShell.
  *
  * Commands are C functions rather than separate executables. Pipelines are
  * therefore implemented by capturing a command's output into a buffer and
- * feeding it to the next stage through the QIRA_PIPE_INPUT variable, which
+ * feeding it to the next stage through the QITO_PIPE_INPUT variable, which
  * gives genuine `a | b | c` semantics without needing fork().
  */
 
@@ -41,7 +41,7 @@ void shell_init(struct shell *sh, const char *name,
     shell_set_var(sh, "PATH", "/bin:/usr/bin");
     shell_set_var(sh, "USER", "user");
     shell_set_var(sh, "PWD", sh->cwd);
-    shell_set_var(sh, "TERM", "qira");
+    shell_set_var(sh, "TERM", "qito");
     shell_set_var(sh, "COLOR", "1");
 }
 
@@ -468,7 +468,7 @@ static int run_simple(struct shell *sh, int argc, char **argv)
 /*
  * Execute one pipeline stage list. `segments` holds the individual commands;
  * the output of each is captured and handed to the next through the
- * QIRA_PIPE_INPUT variable, which pipe-aware commands read.
+ * QITO_PIPE_INPUT variable, which pipe-aware commands read.
  */
 static int run_pipeline(struct shell *sh, char segments[][SHELL_LINE_MAX],
                         int count)
@@ -536,7 +536,7 @@ static int run_pipeline(struct shell *sh, char segments[][SHELL_LINE_MAX],
             if (input_data &&
                 fs_read_file(path, input_data, shell_scratch_size() - 1, &got) == 0) {
                 input_data[got] = '\0';
-                shell_set_var(sh, "QIRA_PIPE_INPUT", input_data);
+                shell_set_var(sh, "QITO_PIPE_INPUT", input_data);
             } else {
                 shell_error(sh, "%s: cannot open input file", path);
                 return 1;
@@ -545,7 +545,7 @@ static int run_pipeline(struct shell *sh, char segments[][SHELL_LINE_MAX],
 
         /* Feed the previous stage's output in. */
         if (pipe_buffer) {
-            shell_set_var(sh, "QIRA_PIPE_INPUT", pipe_buffer);
+            shell_set_var(sh, "QITO_PIPE_INPUT", pipe_buffer);
         }
 
         char  storage[SHELL_LINE_MAX * 2];
@@ -621,7 +621,7 @@ static int run_pipeline(struct shell *sh, char segments[][SHELL_LINE_MAX],
     if (pipe_buffer) {
         kfree(pipe_buffer);
     }
-    shell_unset_var(sh, "QIRA_PIPE_INPUT");
+    shell_unset_var(sh, "QITO_PIPE_INPUT");
     return status;
 }
 
@@ -1045,11 +1045,11 @@ static void build_prompt(struct shell *sh, char *out, size_t size)
     }
 
     if (color) {
-        snprintf(out, size, "\033[92m%s@qira\033[0m:\033[94m%s\033[0m%s ",
+        snprintf(out, size, "\033[92m%s@qito\033[0m:\033[94m%s\033[0m%s ",
                  user ? user : "user", display,
                  (sh->last_status == 0) ? "$" : "\033[91m$\033[0m");
     } else {
-        snprintf(out, size, "%s@qira:%s$ ", user ? user : "user", display);
+        snprintf(out, size, "%s@qito:%s$ ", user ? user : "user", display);
     }
 }
 

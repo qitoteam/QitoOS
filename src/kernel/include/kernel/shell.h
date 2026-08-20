@@ -1,5 +1,5 @@
 /*
- * Qira OS - shell framework
+ * QitoOS - shell framework
  *
  * Both QCSH and UltraShell are built on this layer. It provides the pieces a
  * genuine shell needs and that neither wants to reimplement:
@@ -12,8 +12,8 @@
  *   - a captured output stream so pipelines can be implemented without
  *     requiring real processes.
  */
-#ifndef QIRA_SHELL_H
-#define QIRA_SHELL_H
+#ifndef QITO_SHELL_H
+#define QITO_SHELL_H
 
 #include <kernel/types.h>
 
@@ -177,4 +177,4 @@ void ultrashell_init(void);
 const struct shell_command *qcsh_commands(int *count);
 const struct shell_command *ultrashell_commands(int *count);
 
-#endif /* QIRA_SHELL_H */
+#endif /* QITO_SHELL_H */

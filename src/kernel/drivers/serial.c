@@ -1,5 +1,5 @@
 /*
- * Qira OS - 16550 UART driver
+ * QitoOS - 16550 UART driver
  *
  * The serial port is the kernel's most dependable output channel: it works
  * before the framebuffer is up and it is trivially captured by emulators, so

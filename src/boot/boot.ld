@@ -1,5 +1,5 @@
 /*
- * Qira OS - stage1/stage2 bootloader link script
+ * QitoOS - stage1/stage2 bootloader link script
  *
  * The BIOS loads the El Torito no-emulation boot image at physical 0x7C00.
  * Stage 1 (the first 512 bytes) and stage 2 are linked as one flat blob.

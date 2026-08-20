@@ -1,5 +1,5 @@
 /*
- * Qira OS - HTTP client
+ * QitoOS - HTTP client
  *
  * A blocking HTTP/1.1 client over the TCP layer. It handles the parts a
  * fetch tool and the git client actually need: GET and POST, request and
@@ -193,7 +193,7 @@ int http_request(const char *url, const struct http_options *options,
         }
         if (parsed.secure) {
             strlcpy(out->error,
-                    "https is not supported: Qira has no TLS implementation",
+                    "https is not supported: Qito has no TLS implementation",
                     sizeof(out->error));
             return -1;
         }
@@ -220,10 +220,10 @@ int http_request(const char *url, const struct http_options *options,
             request, sizeof(request),
             "%s %s HTTP/1.1\r\n"
             "Host: %s\r\n"
-            "User-Agent: QiraOS/%s\r\n"
+            "User-Agent: QitoOS/%s\r\n"
             "Accept: */*\r\n"
             "Connection: close\r\n",
-            method, parsed.path, parsed.host, QIRA_VERSION_STRING);
+            method, parsed.path, parsed.host, QITO_VERSION_STRING);
 
         if (options && options->extra_headers) {
             length += snprintf(request + length, sizeof(request) - (size_t)length,

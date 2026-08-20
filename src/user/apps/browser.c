@@ -1,5 +1,5 @@
 /*
- * Qira OS - Web Browser
+ * QitoOS - Web Browser
  *
  * Fetches pages over HTTP and renders them. The renderer handles the subset
  * of HTML that carries meaning in a text document: headings, paragraphs,
@@ -7,7 +7,7 @@
  * engine — there is no CSS, no tables and no images — but it makes real pages
  * readable, and links are navigable.
  *
- * Qira has no TLS, so https:// is refused with an explanation rather than a
+ * Qito has no TLS, so https:// is refused with an explanation rather than a
  * confusing failure.
  */
 
@@ -476,7 +476,7 @@ static void browser_load(struct browser_state *state, const char *url,
         add_line(state, "", LINE_BLANK, -1);
 
         if (strstr(response.error, "https")) {
-            add_line(state, "Qira OS has no TLS implementation, so only",
+            add_line(state, "QitoOS has no TLS implementation, so only",
                      LINE_TEXT, -1);
             add_line(state, "http:// addresses can be opened.", LINE_TEXT, -1);
         } else {
@@ -531,7 +531,7 @@ static void browser_on_open(struct window *win)
     strlcpy(state->status, "Type an address and press Enter",
             sizeof(state->status));
 
-    add_line(state, "Qira Browser", LINE_HEADING, -1);
+    add_line(state, "Qito Browser", LINE_HEADING, -1);
     add_line(state, "", LINE_BLANK, -1);
     add_line(state, "Enter an http:// address in the bar above.", LINE_TEXT, -1);
     add_line(state, "", LINE_BLANK, -1);
@@ -543,7 +543,7 @@ static void browser_on_open(struct window *win)
     add_line(state, "DNS resolution, or a numeric address.", LINE_LIST, -1);
     add_line(state, "", LINE_BLANK, -1);
     add_line(state, "What is not", LINE_SUBHEADING, -1);
-    add_line(state, "HTTPS: Qira OS has no TLS implementation.", LINE_LIST, -1);
+    add_line(state, "HTTPS: QitoOS has no TLS implementation.", LINE_LIST, -1);
     add_line(state, "CSS, JavaScript, images and tables.", LINE_LIST, -1);
     add_line(state, "", LINE_BLANK, -1);
     add_line(state, "Tab selects a link, Enter opens it, Backspace goes back.",

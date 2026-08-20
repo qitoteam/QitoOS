@@ -2,7 +2,7 @@
 """
 isofs.py - a small, dependency-free ISO 9660 + El Torito image writer.
 
-Qira OS ships its own ISO generator so the build does not depend on
+QitoOS ships its own ISO generator so the build does not depend on
 ``xorriso``/``genisoimage`` being installed. The writer implements the subset
 of ECMA-119 (ISO 9660) that PC firmware and common tooling actually need:
 
@@ -21,7 +21,7 @@ The image is laid out as:
     sector 20         El Torito boot catalogue
     ...               path tables, directory records, file data
 
-Only what Qira OS needs is implemented; this is deliberately not a general
+Only what QitoOS needs is implemented; this is deliberately not a general
 purpose mastering tool.
 """
 
@@ -143,7 +143,7 @@ class Node:
 class IsoBuilder:
     """Assembles an ISO 9660 image from an in-memory tree."""
 
-    def __init__(self, volume_id: str = "QIRAOS", app_id: str = "QIRA OS") -> None:
+    def __init__(self, volume_id: str = "QITOOS", app_id: str = "QITO OS") -> None:
         self.root = Node("", True)
         self.volume_id = volume_id
         self.app_id = app_id
@@ -527,7 +527,7 @@ class IsoBuilder:
         entry = bytearray(32)
         entry[0] = 0x01  # header id
         entry[1] = 0x00  # platform: 80x86
-        entry[4:28] = pad_str("Qira OS", 24)
+        entry[4:28] = pad_str("QitoOS", 24)
         entry[30] = 0x55
         entry[31] = 0xAA
         checksum = sum(struct.unpack("<16H", bytes(entry))) & 0xFFFF

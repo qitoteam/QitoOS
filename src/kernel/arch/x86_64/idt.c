@@ -1,5 +1,5 @@
 /*
- * Qira OS - Interrupt Descriptor Table and the central interrupt dispatcher
+ * QitoOS - Interrupt Descriptor Table and the central interrupt dispatcher
  *
  * All 256 vectors are populated with assembly stubs from isr.S. The dispatcher
  * routes CPU exceptions to the fault handler, hardware IRQs to registered

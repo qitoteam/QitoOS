@@ -32,8 +32,8 @@ def main(path: str) -> int:
             f"(found {data[510]:#04x} {data[511]:#04x})"
         )
 
-    if data.find(b"QIRAPLD1") < 0:
-        problems.append("payload descriptor table 'QIRAPLD1' not found")
+    if data.find(b"QITOPLD1") < 0:
+        problems.append("payload descriptor table 'QITOPLD1' not found")
 
     if len(data) > MAX_BOOT_SIZE:
         problems.append(

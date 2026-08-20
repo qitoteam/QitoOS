@@ -1,5 +1,5 @@
 /*
- * Qira OS - Settings
+ * QitoOS - Settings
  *
  * Graphical front end to the system configuration store. Boolean settings
  * toggle, integers step, and string settings cycle through their known

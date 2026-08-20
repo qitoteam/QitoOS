@@ -1,11 +1,11 @@
 /*
- * Qira OS - HTTP client
+ * QitoOS - HTTP client
  *
  * Plain HTTP/1.1 over the TCP layer. There is no TLS, so https:// URLs are
  * refused with an explanatory message rather than failing obscurely.
  */
-#ifndef QIRA_HTTP_H
-#define QIRA_HTTP_H
+#ifndef QITO_HTTP_H
+#define QITO_HTTP_H
 
 #include <kernel/types.h>
 
@@ -44,4 +44,4 @@ void http_free(struct http_response *response);
 
 const char *http_status_text(int status);
 
-#endif /* QIRA_HTTP_H */
+#endif /* QITO_HTTP_H */

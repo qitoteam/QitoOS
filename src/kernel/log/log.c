@@ -1,5 +1,5 @@
 /*
- * Qira OS - kernel log ring buffer
+ * QitoOS - kernel log ring buffer
  *
  * Every record is timestamped with the monotonic tick counter and tagged with
  * a level and subsystem, then appended to a circular byte buffer. Oldest data

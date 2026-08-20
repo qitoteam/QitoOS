@@ -1,5 +1,5 @@
 /*
- * Qira OS - desktop environment
+ * QitoOS - desktop environment
  *
  * Owns the framebuffer after boot. Each frame it composites the wallpaper,
  * the window stack (back to front), the panel, any open menu, notifications
@@ -496,7 +496,7 @@ static void draw_wallpaper(void)
     }
 
     /* A subtle logo in the lower right. */
-    const char *label = "Qira OS " QIRA_VERSION_STRING;
+    const char *label = "QitoOS " QITO_VERSION_STRING;
     fb_draw_string(fb_width() - fb_text_width(label) - 14, fb_height() - 20, label,
                    RGB(COLOR_R(theme.desktop_bottom) + 40,
                        COLOR_G(theme.desktop_bottom) + 40,
@@ -562,9 +562,9 @@ static void draw_window(struct window *win)
 
     int text_x = win->x + 10;
     if (win->app) {
-        const struct qac_image *icon = qac_get(win->app->icon_name);
+        const struct qti_image *icon = qti_get(win->app->icon_name);
         if (icon) {
-            qac_draw_scaled(icon, text_x, win->y + (TITLEBAR_HEIGHT - 16) / 2, 16);
+            qti_draw_scaled(icon, text_x, win->y + (TITLEBAR_HEIGHT - 16) / 2, 16);
             text_x += 22;
         } else if (win->app->icon[0]) {
             fb_draw_string(text_x, win->y + (TITLEBAR_HEIGHT - FONT_HEIGHT) / 2,
@@ -630,9 +630,9 @@ static void draw_panel(void)
                      menu_open ? theme.accent : theme.titlebar_active);
     }
     color_t menu_text = menu_open ? RGB(255, 255, 255) : theme.panel_text;
-    fb_draw_string(14, panel_y + (PANEL_HEIGHT - FONT_HEIGHT) / 2, "Qira",
+    fb_draw_string(14, panel_y + (PANEL_HEIGHT - FONT_HEIGHT) / 2, "Qito",
                    menu_open ? menu_text : theme.accent);
-    fb_draw_string(14 + fb_text_width("Qira") + 8,
+    fb_draw_string(14 + fb_text_width("Qito") + 8,
                    panel_y + (PANEL_HEIGHT - FONT_HEIGHT) / 2, "Menu", menu_text);
 
     /* Window buttons in the task list. */
@@ -659,7 +659,7 @@ static void draw_panel(void)
 
     /* Status area on the right: memory, tasks, clock. */
     char status[96];
-    struct qira_time now;
+    struct qito_time now;
     time_from_unix(rtc_unix_time(), &now);
 
     if (config_get_bool("desktop.show_clock", true)) {
@@ -720,9 +720,9 @@ static void draw_menu(void)
         color_t text = hovered ? RGB(255, 255, 255) : theme.window_text;
 
         /* Prefer the application's QAC icon, falling back to its glyphs. */
-        const struct qac_image *icon = qac_get(app->icon_name);
+        const struct qti_image *icon = qti_get(app->icon_name);
         if (icon) {
-            qac_draw_scaled(icon, menu_x + 12, y + (row_height - 18) / 2, 18);
+            qti_draw_scaled(icon, menu_x + 12, y + (row_height - 18) / 2, 18);
         } else {
             fb_draw_string(menu_x + 14, y + (row_height - FONT_HEIGHT) / 2,
                            app->icon, hovered ? text : app->accent);
@@ -1215,7 +1215,7 @@ NORETURN void desktop_run(void)
          * still usable.
          */
         KLOG_WARN("desktop", "no framebuffer: falling back to a console shell");
-        console_puts("\nQira OS - no graphics available, starting UltraShell.\n\n");
+        console_puts("\nQitoOS - no graphics available, starting UltraShell.\n\n");
         for (;;) {
             shell_run(ultrashell_instance());
             ultrashell_instance()->running = true;
@@ -1226,8 +1226,8 @@ NORETURN void desktop_run(void)
 
     /* Open a terminal so the system is immediately usable. */
     window_create("Terminal");
-    desktop_notify("Welcome to Qira OS",
-                   "Press Super+T for a terminal, or use the Qira menu.");
+    desktop_notify("Welcome to QitoOS",
+                   "Press Super+T for a terminal, or use the Qito menu.");
 
     /*
      * Automated tests cannot press a key, so `capture=<ms>[,<ms>...]` on the
@@ -1237,7 +1237,7 @@ NORETURN void desktop_run(void)
     int      capture_count = 0;
     int      captures_done = 0;
     {
-        extern const struct qira_boot_info *kernel_boot_info(void);
+        extern const struct qito_boot_info *kernel_boot_info(void);
         const char *cmdline = kernel_boot_info()->cmdline;
         const char *option  = strstr(cmdline, "capture=");
         if (option) {

@@ -1,53 +1,56 @@
 /*
- * Qira OS - boot protocol
+ * QitoOS - boot protocol
  *
- * Structure handed from the Qira bootloader (src/boot) to the kernel.
- * A pointer to a `struct qira_boot_info` is passed in RDI when the kernel
+ * Structure handed from the Qito bootloader (src/boot) to the kernel.
+ * A pointer to a `struct qito_boot_info` is passed in RDI when the kernel
  * entry point is invoked in 64-bit long mode.
  *
  * This header is shared verbatim between the bootloader build and the kernel
  * build, so it must remain free-standing and dependency-light.
  */
-#ifndef QIRA_BOOTINFO_H
-#define QIRA_BOOTINFO_H
+#ifndef QITO_BOOTINFO_H
+#define QITO_BOOTINFO_H
 
 /*
  * This header is included both by hosted tools (which have a C library) and
  * by the freestanding kernel build (which is compiled with -nostdinc), so the
  * fixed-width types are defined locally when <stdint.h> is unavailable.
  */
-#if defined(QIRA_KERNEL)
+#if defined(QITO_KERNEL)
 #include <kernel/types.h>
 #else
 #include <stdint.h>
 #endif
 
-#define QIRA_BOOT_MAGIC   0x51424F49u /* 'QBOI' */
-#define QIRA_BOOT_VERSION 1u
+#define QITO_BOOT_MAGIC   0x51544249u /* 'QTBI' */
+#define QITO_BOOT_VERSION 1u
 
 /* Fixed physical addresses agreed between stage 2 and the kernel. */
-#define QIRA_BOOTINFO_PHYS 0x00020000ull
-#define QIRA_MMAP_PHYS     0x00021000ull
-#define QIRA_KERNEL_PHYS   0x00100000ull
-#define QIRA_RAMDISK_PHYS  0x02000000ull
+#define QITO_BOUNCE_PHYS   0x00010000ull
+#define QITO_BOOTINFO_PHYS 0x00018000ull
+#define QITO_MMAP_PHYS     0x00019000ull
+#define QITO_PML4_PHYS     0x00020000ull
+#define QITO_STACK_PHYS    0x00090000ull
+#define QITO_KERNEL_PHYS   0x00100000ull
+#define QITO_RAMDISK_PHYS  0x02000000ull
 
 /* Memory map entry types (identical to the BIOS E820 encoding). */
-#define QIRA_MEM_USABLE     1u
-#define QIRA_MEM_RESERVED   2u
-#define QIRA_MEM_ACPI_RECL  3u
-#define QIRA_MEM_ACPI_NVS   4u
-#define QIRA_MEM_BAD        5u
+#define QITO_MEM_USABLE     1u
+#define QITO_MEM_RESERVED   2u
+#define QITO_MEM_ACPI_RECL  3u
+#define QITO_MEM_ACPI_NVS   4u
+#define QITO_MEM_BAD        5u
 
-struct qira_mmap_entry {
+struct qito_mmap_entry {
     uint64_t base;
     uint64_t length;
     uint32_t type;
     uint32_t attr;
 } __attribute__((packed));
 
-struct qira_boot_info {
-    uint32_t magic;       /* QIRA_BOOT_MAGIC                              */
-    uint32_t version;     /* QIRA_BOOT_VERSION                            */
+struct qito_boot_info {
+    uint32_t magic;       /* QITO_BOOT_MAGIC                              */
+    uint32_t version;     /* QITO_BOOT_VERSION                            */
 
     /* Linear framebuffer, as programmed through VBE by stage 2. */
     uint64_t fb_addr;
@@ -72,7 +75,7 @@ struct qira_boot_info {
     uint64_t kernel_phys;
     uint64_t kernel_size;
 
-    /* Initial RAM disk (the QiraFS root image). */
+    /* Initial RAM disk (the QitoFS root image). */
     uint64_t ramdisk_phys;
     uint64_t ramdisk_size;
 
@@ -88,4 +91,4 @@ struct qira_boot_info {
     char     cmdline[256];
 } __attribute__((packed));
 
-#endif /* QIRA_BOOTINFO_H */
+#endif /* QITO_BOOTINFO_H */

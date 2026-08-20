@@ -1,10 +1,10 @@
 /*
- * Qira OS - virtual filesystem core
+ * QitoOS - virtual filesystem core
  *
  * Implements the node tree, path resolution, and the file object layer that
  * sits between the system calls and the individual filesystem backends.
  *
- * Regular files live in memory (QiraFS): their contents are a heap buffer that
+ * Regular files live in memory (QitoFS): their contents are a heap buffer that
  * grows as needed. Device and synthetic nodes delegate to an ops table.
  */
 

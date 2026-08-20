@@ -1,5 +1,5 @@
 /*
- * Qira OS - process/system information filesystem
+ * QitoOS - process/system information filesystem
  *
  * Each node under /proc regenerates its contents on demand from live kernel
  * state, which means `cat /proc/meminfo` always shows current numbers and the
@@ -69,13 +69,13 @@ static void format_size(uint64_t bytes, char *out, size_t size)
 
 static void gen_version(struct proc_writer *w)
 {
-    pw_printf(w, "%s %s (%s)\n", QIRA_PROJECT_NAME, QIRA_VERSION_STRING,
-              QIRA_CODENAME);
+    pw_printf(w, "%s %s (%s)\n", QITO_PROJECT_NAME, QITO_VERSION_STRING,
+              QITO_CODENAME);
     pw_printf(w, "architecture: x86_64\n");
-    pw_printf(w, "build: %s\n", QIRA_BUILD_ID);
-    pw_printf(w, "built: %s\n", QIRA_BUILD_DATE);
-    pw_printf(w, "maintainer: %s\n", QIRA_MAINTAINER);
-    pw_printf(w, "url: %s\n", QIRA_PROJECT_URL);
+    pw_printf(w, "build: %s\n", QITO_BUILD_ID);
+    pw_printf(w, "built: %s\n", QITO_BUILD_DATE);
+    pw_printf(w, "maintainer: %s\n", QITO_MAINTAINER);
+    pw_printf(w, "url: %s\n", QITO_PROJECT_URL);
 }
 
 static void gen_meminfo(struct proc_writer *w)
@@ -177,7 +177,7 @@ static void gen_filesystems(struct proc_writer *w)
     char size[32];
     format_size(stats.total_bytes, size, sizeof(size));
 
-    pw_printf(w, "filesystem: qirafs (in-memory root)\n");
+    pw_printf(w, "filesystem: qitofs (in-memory root)\n");
     pw_printf(w, "nodes:       %llu\n", (unsigned long long)stats.nodes);
     pw_printf(w, "files:       %llu\n", (unsigned long long)stats.files);
     pw_printf(w, "directories: %llu\n", (unsigned long long)stats.directories);

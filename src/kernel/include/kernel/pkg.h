@@ -1,13 +1,13 @@
 /*
- * Qira OS - component/package registry
+ * QitoOS - component/package registry
  *
- * Qira does not download software from a network repository. Instead the
+ * Qito does not download software from a network repository. Instead the
  * package manager tracks the components that make up the running system:
  * which are installed, what they provide, and which optional ones are enabled.
  * This gives `pkg` real, honest work to do rather than pretending to be apt.
  */
-#ifndef QIRA_PKG_H
-#define QIRA_PKG_H
+#ifndef QITO_PKG_H
+#define QITO_PKG_H
 
 #include <kernel/types.h>
 
@@ -43,4 +43,4 @@ const struct package *pkg_find(const char *name);
 /* The `pkg` shell command. */
 int pkg_command(struct shell *sh, int argc, char **argv);
 
-#endif /* QIRA_PKG_H */
+#endif /* QITO_PKG_H */
