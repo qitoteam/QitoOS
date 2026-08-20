@@ -73,6 +73,11 @@ KERNEL_ELF := $(BUILD)/qito-kernel.elf
 KERNEL_BIN := $(BUILD)/qito-kernel.bin
 RAMDISK    := $(BUILD)/qitofs.img
 ISO        := $(BUILD)/qito-os.iso
+# Legacy names for backward compat with old CI (QAC.md/LQX.md era) – produce both qito and qira
+KERNEL_ELF_LEGACY := $(BUILD)/qira-kernel.elf
+KERNEL_BIN_LEGACY := $(BUILD)/qira-kernel.bin
+RAMDISK_LEGACY    := $(BUILD)/qirafs.img
+ISO_LEGACY        := $(BUILD)/qira-os.iso
 
 .PHONY: all iso kernel bootloader ramdisk clean run run-bochs test screenshots \
         test-unit test-boot check-tools info dirs release
@@ -139,10 +144,12 @@ $(KERNEL_ELF): $(KERNEL_OBJS) $(KERNEL_LD) tools/gensyms.py
 	@echo "  LD    $@ (pass 2)"
 	@$(LD) $(KLDFLAGS) -T $(KERNEL_LD) $(KERNEL_OBJS) $(KSYMS_OBJ) -o $@
 	@rm -f $@.tmp
+	@cp $@ $(KERNEL_ELF_LEGACY)
 
 $(KERNEL_BIN): $(KERNEL_ELF)
 	@echo "  BIN   $@"
 	@$(OBJCOPY) -O binary $< $@
+	@cp $@ $(KERNEL_BIN_LEGACY)
 
 kernel: $(KERNEL_BIN)
 
@@ -151,6 +158,7 @@ $(RAMDISK): $(shell find rootfs -type f 2>/dev/null) tools/mkqitofs.py
 	@echo "  FS    $@"
 	@mkdir -p $(BUILD)
 	@$(PYTHON) tools/mkqitofs.py --root rootfs --output $@ --version $(VERSION)
+	@cp $@ $(RAMDISK_LEGACY)
 
 ramdisk: $(RAMDISK)
 
@@ -171,8 +179,9 @@ $(ISO): $(BOOT_BIN) $(KERNEL_BIN) $(RAMDISK) $(CMDLINE_STAMP) tools/mkiso.py too
 	@$(PYTHON) tools/mkiso.py --boot $(BOOT_BIN) --kernel $(KERNEL_BIN) \
 		--ramdisk $(RAMDISK) --output $@ --version $(VERSION) \
 		--cmdline "$(CMDLINE)"
+	@cp $@ $(ISO_LEGACY)
 
-iso: $(ISO)
+iso: $(ISO) $(ISO_LEGACY) $(KERNEL_ELF_LEGACY) $(KERNEL_BIN_LEGACY) $(RAMDISK_LEGACY)
 
 # --- running ---------------------------------------------------------------
 QEMU      ?= qemu-system-x86_64
@@ -197,6 +206,7 @@ test-unit:
 # runs the in-kernel self-test and captures a frame, both driven by the
 # kernel command line.
 TEST_ISO      := $(BUILD)/qito-os-test.iso
+TEST_ISO_LEGACY := $(BUILD)/qira-os-test.iso
 TEST_CMDLINE  := root=qitofs console=fb echo=serial \
                  autorun=qcsh;selftest;diag;sysinfo;ush;ls_-l_/etc;calc_(7+3)*4;fonts;qti_list;copy_hi;paste;qtx_exports;qdl_list;qtpkg_list \
                  capture=9000
@@ -206,6 +216,7 @@ $(TEST_ISO): $(BOOT_BIN) $(KERNEL_BIN) $(RAMDISK) tools/mkiso.py tools/isofs.py
 	@$(PYTHON) tools/mkiso.py --boot $(BOOT_BIN) --kernel $(KERNEL_BIN) \
 		--ramdisk $(RAMDISK) --output $@ --version $(VERSION) \
 		--cmdline "$(TEST_CMDLINE)"
+	@cp $@ $(TEST_ISO_LEGACY)
 
 test-boot: $(TEST_ISO)
 	@$(PYTHON) tests/run_boot_tests.py --iso $(TEST_ISO) \
