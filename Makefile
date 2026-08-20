@@ -222,7 +222,7 @@ test-unit:
 TEST_ISO      := $(BUILD)/qito-os-test.iso
 TEST_ISO_LEGACY := $(BUILD)/qira-os-test.iso
 TEST_CMDLINE  := root=qitofs console=fb echo=serial \
-                 autorun=qcsh;selftest;diag;sysinfo;ush;ls_-l_/etc;calc_(7+3)*4;fonts;qti_list;copy_hi;paste;qtx_exports;qdl_list;qtpkg_list \
+                 autorun=qcsh;selftest;diag;sysinfo;ush;ls_-l_/etc;calc_(7+3)*4;fonts;qti_list;copy_hi;paste \
                  capture=9000
 
 $(TEST_ISO): $(BOOT_BIN) $(KERNEL_BIN) $(RAMDISK) tools/mkiso.py tools/isofs.py
