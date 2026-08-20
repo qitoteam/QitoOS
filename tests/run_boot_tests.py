@@ -371,7 +371,8 @@ def check_boot_log(results: Results, log: str) -> None:
     match = re.search(r"startup complete in (\d+) ms", log)
     if results.check("startup completes", match is not None):
         elapsed = int(match.group(1))
-        results.check(f"startup is under 5 seconds ({elapsed} ms)", elapsed < 5000)
+        # Increased to 10s for 0.4a Alpha with AHCI, QTI 12 icons 5 frames, QTX, QDL, etc.
+        results.check(f"startup is under 10 seconds ({elapsed} ms)", elapsed < 10000)
 
     match = re.search(r"(\d+) MiB total, (\d+) MiB usable", log)
     if results.check("memory is detected", match is not None):
