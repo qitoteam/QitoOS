@@ -54,7 +54,7 @@ The handoff release. Renames Qira OS → QitoOS, adds QTX/QDL/QTI/qtpkg, qcc/qas
 - Example: qasm hello.s -o hello.qtx, qcc hello.c -o hello.qtx
 
 **qtpkg — package manager (Part 6)**
-- Entry file /user/qtpkg/entry.var syntax: pkg = [version](url),[version](url); # comment, one per line, name = then comma-sep [version](url) terminated by ; # starts comment, users may add own URLs, real parser with line numbers
+- Entry file /user/qtpkg/entry.var syntax: pkg = [version] (url),[version] (url); # comment, one per line, name = then comma-sep [version] (url) terminated by ; # starts comment, users may add own URLs, real parser with line numbers
 - Each URL points at pkg.qtpkg_profile manifest: name, version, description, arch, dependencies, install paths, checksums, payload URL
 - Commands: install, update, -os update, upgrade, -fix os, -fix --driver amd64|intel, list/search/remove/info/rollback
 - Installs drivers, fonts, apps, tools, updates, -fix verifies checksums and re-fetches corrupt

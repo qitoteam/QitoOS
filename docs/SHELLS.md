@@ -229,7 +229,7 @@ at startup.
 | `qtx info\|verify\|exports\|run\|list [path]` | inspect QTX executables (QX header 88B format X, W^X, checksum), list kernel exports, run as Ring3 user task |
 | `qdl list\|load\|unload\|info [path]` | QDL dynamic libraries, format D, library flag, export table, refcounted, on-demand from /lib/*.qdl |
 | `qti list\|info [path]` | QTI icons, real pixels, 5 sizes 16/32/64/128/256 default 64, RAW/RLE/INDEX encodings, largest-first |
-| `qtpkg install\|update\|list\|search\|remove\|info\|upgrade\|-os update\|-fix os\|-fix --driver\|rollback` | package manager, entry /user/qtpkg/entry.var [version](url); syntax, profile .qtpkg_profile, payload, checksums, TLS honest error, snapshots, -fix re-fetches corrupt |
+| `qtpkg install\|update\|list\|search\|remove\|info\|upgrade\|-os update\|-fix os\|-fix --driver\|rollback` | package manager, entry /user/qtpkg/entry.var [version] (url); syntax, profile .qtpkg_profile, payload, checksums, TLS honest error, snapshots, -fix re-fetches corrupt |
 | `qasm <input.s> -o <output.qtx> [--shared]` | QitoOS assembler, genuine x86-64 subset (mov, add, sub, lea, jmp, call, ret, etc), directives .section .text .data etc, produces .qtx/.qdl |
 | `qcc <input.c> -o <output.qtx> [--shared]` | QitoOS C compiler, C subset (int/char/void/pointers/arrays/structs, if/else/while/for), thin driver over GCC, produces .qtx/.qdl |
 | `fonts [set <ui\|terminal> <id>]` | list or choose typefaces qito-sans/mono, 8x16, bold derived row\|(row>>1) |

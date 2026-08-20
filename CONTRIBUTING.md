@@ -23,7 +23,7 @@ Good first contributions:
 - Extra QTI icons (real PNG/RGBA via `tools/mkqti.py`, 5 sizes 16/32/64/128/256) or new font face
 - QTX programs using SDK (`sdk/include/qito/`, `examples/hello.c`)
 - QDL libraries for `/lib/*.qdl`
-- qtpkg packages (add entry to `/user/qtpkg/entry.var` with `[version](url);` syntax)
+- qtpkg packages (add entry to `/user/qtpkg/entry.var` with `[version] (url);` syntax)
 
 ---
 
@@ -203,7 +203,7 @@ Be realistic about threat model: QitoOS is hobby OS. It has xoshiro256** RNG (no
 
 ## qtpkg, qcc, qasm specifics
 
-- **qtpkg**: entry file `/user/qtpkg/entry.var` syntax `pkg = [version](url),[version](url);` # comment, one per line, ; terminated. Parser with line numbers in `src/kernel/sys/qtpkg.c`. Each URL points at `.qtpkg_profile` manifest with name, version, description, arch, dependencies, install paths, checksums, payload URL, signature. Commands: install, update, -os update, upgrade, -fix os, -fix --driver amd64|intel, list/search/remove/info/rollback. TLS honest: https gives clear error, plain HTTP mirrors work. See `docs/QTPKG.md`.
+- **qtpkg**: entry file `/user/qtpkg/entry.var` syntax `pkg = [version] (url),[version] (url);` # comment, one per line, ; terminated. Parser with line numbers in `src/kernel/sys/qtpkg.c`. Each URL points at `.qtpkg_profile` manifest with name, version, description, arch, dependencies, install paths, checksums, payload URL, signature. Commands: install, update, -os update, upgrade, -fix os, -fix --driver amd64|intel, list/search/remove/info/rollback. TLS honest: https gives clear error, plain HTTP mirrors work. See `docs/QTPKG.md`.
 
 - **qcc/qasm**: installed via qtpkg, not bundled. qasm is genuine working x86-64 assembler useful subset (mov, add, sub, lea, jmp, call, ret, etc, directives .section .text .data etc). qcc is real C subset compiler (int/char/void/pointers/arrays/structs, if/else/while/for/return, + - * / % & | ^ etc, #include/#define). Documented exactly in `sdk/include/qito/qcc.h` and `docs/QTX.md`. Do not overclaim. Host versions in `sdk/bin/` and `tools/qasm.py`/`tools/qcc.py` are thin drivers over GCC that emit QTX (88-byte header, format X/D, checksum, W^X). Inside QitoOS, shell commands `qasm` and `qcc` produce minimal valid QTX for MVP, host versions do full compile.
 

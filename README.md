@@ -145,11 +145,11 @@ Centrepiece. Replaces git entirely.
 Entry file: `/user/qtpkg/entry.var` – user-facing `c:root/user/qtpkg/entry.var`. Syntax:
 
 ```
-pkg1 = [1.001](https://download-link.com/pkg),[1.002](https://download-link.com/pkg2);
+pkg1 = [1.001] (https://download-link.com/pkg),[1.002] (https://download-link.com/pkg2);
 pkg2 = # not implemented yet
 ```
 
-Rules: one entry per line, `name =` then comma-separated `[version](url)` pairs, terminated by `;`. `#` starts comment. Users may add own URLs. Real parser with clear error messages including line numbers.
+Rules: one entry per line, `name =` then comma-separated `[version] (url)` pairs, terminated by `;`. `#` starts comment. Users may add own URLs. Real parser with clear error messages including line numbers.
 
 Each version URL points at `pkg.qtpkg_profile` manifest – metadata file describing where project is, not project itself. Carries name, version, description, architecture, dependencies, install paths, file checksums, payload URL.
 

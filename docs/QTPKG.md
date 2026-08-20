@@ -9,7 +9,7 @@ The centrepiece of QitoOS. Replaces `git` entirely (the in-OS git client is remo
 Syntax:
 
 ```
-pkg1 = [1.001](https://download-link.com/pkg),[1.002](https://download-link.com/pkg2);
+pkg1 = [1.001] (https://download-link.com/pkg),[1.002] (https://download-link.com/pkg2);
 pkg2 = # not implemented yet
 browser = [0.3.0](http://example.com/browser-0.3.0.qtpkg_profile);
 qasm = [1.0.0](http://example.com/qasm-1.0.0.qtpkg_profile);
@@ -18,8 +18,8 @@ qasm = [1.0.0](http://example.com/qasm-1.0.0.qtpkg_profile);
 Rules:
 
 - One entry per line
-- Format: `name = [version](url),[version](url);`
-- Comma-separated `[version](url)` pairs, terminated by `;`
+- Format: `name = [version] (url),[version] (url);`
+- Comma-separated `[version] (url)` pairs, terminated by `;`
 - `#` starts a comment (whole line or after `;`)
 - Users may add their own URLs
 - Real parser with clear error messages including line numbers (see `src/kernel/sys/qtpkg.c: qtpkg_parse_entry_file`)
