@@ -1,6 +1,6 @@
 name: CI
 
-# Build QitoOS, run every test suite, produce the bootable ISO, validate it,
+# Build Qira OS, run every test suite, produce the bootable ISO, validate it,
 # and keep the image as a workflow artifact.
 
 on:
@@ -57,7 +57,7 @@ jobs:
         run: |
           for doc in CHANGELOG.md CONTRIBUTING.md \
                      docs/ARCHITECTURE.md docs/BOOT.md docs/SHELLS.md \
-                     docs/DRIVERS.md docs/FONTS.md docs/QTI.md docs/QTX.md docs/QDL.md docs/QTPKG.md; do
+                     docs/DRIVERS.md docs/FONTS.md docs/QAC.md docs/LQX.md; do
             test -f "$doc" || { echo "missing document: $doc"; exit 1; }
           done
           echo "documentation set is complete"
@@ -142,7 +142,7 @@ jobs:
         run: make iso
 
       - name: Validate the ISO
-        run: python3 scripts/validate-iso.py --iso build/qito-os.iso
+        run: python3 scripts/validate-iso.py --iso build/qira-os.iso
 
       - name: Read the version
         id: version
@@ -151,11 +151,11 @@ jobs:
       - name: Summarise the build
         run: |
           {
-            echo "### QitoOS build"
+            echo "### Qira OS build"
             echo
             echo '| Artefact | Size |'
             echo '| --- | ---: |'
-            for f in build/boot.bin build/qito-kernel.bin build/qitofs.img build/qito-os.iso; do
+            for f in build/boot.bin build/qira-kernel.bin build/qirafs.img build/qira-os.iso; do
               printf '| `%s` | %s |\n' "$f" "$(du -h "$f" | cut -f1)"
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -163,10 +163,10 @@ jobs:
       - name: Upload the ISO
         uses: actions/upload-artifact@v4
         with:
-          name: qito-os-iso
+          name: qira-os-iso
           path: |
-            build/qito-os.iso
-            build/qito-kernel.elf
+            build/qira-os.iso
+            build/qira-kernel.elf
           retention-days: 30
           if-no-files-found: error
 
@@ -195,12 +195,12 @@ jobs:
         run: qemu-system-x86_64 --version | head -1
 
       - name: Build the instrumented test image
-        run: make build/qito-os-test.iso
+        run: make build/qira-os-test.iso
 
-      - name: Boot QitoOS and verify it
+      - name: Boot Qira OS and verify it
         run: |
           python3 tests/run_boot_tests.py \
-            --iso build/qito-os-test.iso \
+            --iso build/qira-os-test.iso \
             --emulator qemu \
             --timeout 90 \
             --save-frames build/frames \
@@ -242,9 +242,9 @@ jobs:
         run: |
           make clean
           make
-          test -f build/qito-os.iso
+          test -f build/qira-os.iso
 
       - name: Confirm the build is reproducible in layout
         run: |
-          sha256sum build/qito-kernel.bin build/qitofs.img
-          python3 scripts/validate-iso.py --iso build/qito-os.iso --verbose
+          sha256sum build/qira-kernel.bin build/qirafs.img
+          python3 scripts/validate-iso.py --iso build/qira-os.iso --verbose
